@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantalla 5 – El Cofre de la Constitución · Cádiz 1812</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --crimson:    #8b0000;
+  --crimson-lt: #c41e3a;
+  --crimson-dk: #5c0000;
+  --gold:       #c9a227;
+  --gold-lt:    #f0c040;
+  --gold-dk:    #8b6914;
+  --marble:     #f5f0ea;
+  --marble-dk:  #ddd5c8;
+  --ink:        #0d0d0d;
+  --ink-lt:     #2a1a0a;
+  --velvet:     #3d0015;
+  --parchment:  #f4e8cc;
+  --parch-dk:   #d4c49c;
+  --silver:     #c0c0c0;
+  --liberal:    #1a5c2a;
+  --absolut:    #6b1a1a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'EB Garamond', Georgia, serif;
+  background: #080200;
+  color: var(--marble);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── DARK MAHOGANY BACKGROUND (matches reference image) ── */
+.cadiz-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(
+    ellipse 80% 60% at 72% 50%,
+    #2a0e06 0%,
+    #1a0804 35%,
+    #0e0402 65%,
+    #080200 100%
+  );
+}
+.stars {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 55% at 75% 48%, rgba(60,18,6,.55) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 40% at 85% 55%, rgba(80,22,6,.3) 0%, transparent 60%);
+}
+.city-silhouette {
+  display: none;
+}
+
+/* ── MARBLE TABLE (hidden – dark bg replaces it) ── */
+.marble-table { display: none; }
+
+/* ══ GOLD PARTICLE CANVAS ══ */
+#particleCanvas {
+  position: fixed; inset: 0; z-index: 100; pointer-events: none;
+}
+
+/* ── MAIN ── */
+#app {
+  position: relative; z-index: 10;
+  max-width: 960px; margin: 0 auto;
+  padding: 20px 20px 100px;
+}
+
+/* ── HEADER ── */
+.header {
+  text-align: center; margin-bottom: 28px; padding: 28px 32px;
+  background: linear-gradient(135deg,
+    rgba(13,2,8,.92) 0%,
+    rgba(61,0,21,.88) 50%,
+    rgba(13,2,8,.92) 100%);
+  border: 1px solid var(--gold-dk);
+  border-top: 3px solid var(--gold);
+  position: relative;
+}
+.header::before, .header::after {
+  content: ''; position: absolute;
+  top: 0; width: 40%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.header::before { left: 5%; }
+.header::after  { right: 5%; }
+.header-eyebrow {
+  font-family: 'Cinzel'; font-size: .65rem; letter-spacing: .3em;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 10px;
+}
+.header h1 {
+  font-family: 'Cinzel Decorative'; font-weight: 900;
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  color: var(--gold-lt); line-height: 1.15;
+  text-shadow: 0 2px 20px rgba(201,162,39,.5);
+  margin-bottom: 8px;
+}
+.header p {
+  font-style: italic; color: var(--marble-dk); font-size: .95rem;
+  max-width: 600px; margin: 0 auto;
+}
+
+/* ── PROGRESS ── */
+.progress-strip {
+  display: flex; gap: 8px; justify-content: center;
+  margin-bottom: 24px; flex-wrap: wrap;
+}
+.prog-pip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 16px;
+  border: 1px solid rgba(201,162,39,.3);
+  background: rgba(13,2,8,.7);
+  font-family: 'Cinzel'; font-size: .72rem; letter-spacing: .08em;
+  color: rgba(201,162,39,.5); transition: all .5s;
+}
+.prog-pip.done {
+  border-color: var(--gold);
+  color: var(--gold-lt);
+  background: rgba(61,0,21,.8);
+  box-shadow: 0 0 12px rgba(201,162,39,.3);
+}
+.prog-pip .icon { font-size: 1rem; }
+
+/* ── CARD ── */
+.card {
+  margin-bottom: 24px; position: relative; overflow: hidden;
+  background: linear-gradient(160deg,
+    rgba(13,2,8,.95) 0%,
+    rgba(30,10,15,.93) 100%);
+  border: 1px solid rgba(201,162,39,.25);
+  border-top: 2px solid var(--gold);
+  box-shadow: 0 8px 40px rgba(0,0,0,.7), inset 0 1px 0 rgba(201,162,39,.15);
+}
+.card-inner { padding: 28px; }
+.card-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(201,162,39,.2);
+}
+.card-num {
+  width: 38px; height: 38px; flex-shrink: 0;
+  border: 2px solid var(--gold); display: flex;
+  align-items: center; justify-content: center;
+  font-family: 'Cinzel Decorative'; font-size: 1rem; color: var(--gold);
+  background: rgba(139,0,0,.3);
+}
+.card-title { font-family: 'Cinzel'; font-size: 1.1rem; color: var(--gold-lt); }
+.card-subtitle { font-style: italic; font-size: .85rem; color: var(--marble-dk); margin-top: 3px; }
+
+/* SUCCESS OVERLAY */
+.success-overlay {
+  position: absolute; inset: 0; z-index: 20;
+  background: linear-gradient(135deg, rgba(13,40,20,.96) 0%, rgba(20,60,30,.95) 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
+  opacity: 0; pointer-events: none; transition: opacity .6s;
+}
+.success-overlay.show { opacity: 1; pointer-events: all; }
+.success-overlay .tick { font-size: 3rem; animation: popIn .4s cubic-bezier(.2,1.4,.4,1); }
+.success-overlay p { font-family: 'Cinzel'; color: var(--gold-lt); font-size: 1rem; text-align: center; }
+@keyframes popIn { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+/* ════════════════════════════════════════
+   RETO 1 – TRIAJE LEGISLATIVO (TINDER)
+════════════════════════════════════════ */
+.tinder-arena {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; flex-wrap: wrap;
+}
+.tinder-zone {
+  flex: 1; min-width: 130px; height: 180px;
+  border: 2px dashed rgba(255,255,255,.2);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
+  font-family: 'Cinzel'; font-size: .75rem; letter-spacing: .1em;
+  transition: all .25s; cursor: pointer; text-align: center; padding: 12px;
+}
+.tinder-zone.liberal { border-color: rgba(26,92,42,.6); color: #4caf50; }
+.tinder-zone.absolut { border-color: rgba(107,26,26,.6); color: #ef5350; }
+.tinder-zone:hover   { transform: scale(1.04); }
+.tinder-zone.drag-over { transform: scale(1.07); }
+.tinder-zone.liberal.drag-over { background: rgba(26,92,42,.25); border-color: #4caf50; border-style: solid; }
+.tinder-zone.absolut.drag-over { background: rgba(107,26,26,.25); border-color: #ef5350; border-style: solid; }
+.zone-icon { font-size: 2rem; }
+.zone-label { line-height: 1.3; }
+
+.card-stack {
+  width: 210px; min-height: 180px; position: relative; flex-shrink: 0;
+}
+.law-card {
+  position: absolute; inset: 0;
+  background: var(--parchment);
+  border: 1px solid var(--parch-dk);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; padding: 20px; text-align: center;
+  cursor: grab; user-select: none;
+  box-shadow: 3px 3px 12px rgba(0,0,0,.5);
+  transition: transform .15s, box-shadow .15s;
+  will-change: transform;
+}
+.law-card:hover { box-shadow: 4px 6px 20px rgba(0,0,0,.6); }
+.law-card.dragging { opacity: .85; cursor: grabbing; }
+.law-card .law-icon { font-size: 2.4rem; }
+.law-card .law-text {
+  font-family: 'Cinzel'; font-size: .8rem; color: var(--ink-lt);
+  line-height: 1.4; font-weight: 600;
+}
+.law-card .law-hint {
+  font-family: 'EB Garamond'; font-style: italic;
+  font-size: .75rem; color: #5a4a2a;
+}
+.law-card.flash-liberal { animation: flashLib .45s; }
+.law-card.flash-absolut { animation: flashAbs .45s; }
+@keyframes flashLib { 0%,100%{background:var(--parchment)} 50%{background:#c8f0c8} }
+@keyframes flashAbs { 0%,100%{background:var(--parchment)} 50%{background:#f0c8c8} }
+
+.tinder-counter {
+  text-align: center; margin-top: 12px;
+  font-family: 'Cinzel'; font-size: .78rem; color: var(--gold);
+}
+
+/* keyboard shortcuts hint */
+.key-hint {
+  text-align: center; font-family: 'EB Garamond'; font-style: italic;
+  font-size: .8rem; color: rgba(255,255,255,.35); margin-top: 8px;
+}
+
+/* ════════════════════════════════════════
+   RETO 2 – CANDADO CRONOLÓGICO
+════════════════════════════════════════ */
+.lock-layout { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+.riddles-col { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 12px; }
+.riddle {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(201,162,39,.2);
+  padding: 12px 16px; position: relative;
+}
+.riddle-q { font-size: .9rem; color: var(--marble-dk); margin-bottom: 8px; font-style: italic; }
+.riddle-input {
+  width: 60px; padding: 6px 10px;
+  background: rgba(0,0,0,.5); border: 1px solid rgba(201,162,39,.4);
+  color: var(--gold-lt); font-family: 'Cinzel'; font-size: 1.1rem;
+  text-align: center; outline: none;
+}
+.riddle-input.correct { border-color: #4caf50; color: #4caf50; }
+.riddle-input.wrong   { border-color: #ef5350; animation: shake .3s; }
+.riddle-badge {
+  display: inline-block; margin-left: 8px;
+  font-size: .85rem;
+}
+
+.lock-col {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.lock-display {
+  display: flex; gap: 6px;
+}
+.lock-digit {
+  width: 52px; height: 70px;
+  background: linear-gradient(180deg, #1a0808 0%, #0d0404 100%);
+  border: 2px solid var(--gold-dk);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel Decorative'; font-size: 1.8rem;
+  color: var(--gold); box-shadow: inset 0 2px 8px rgba(0,0,0,.6);
+  transition: color .3s, border-color .3s;
+}
+.lock-digit.lit { border-color: var(--gold-lt); color: var(--gold-lt); box-shadow: 0 0 16px rgba(201,162,39,.5), inset 0 2px 8px rgba(0,0,0,.4); }
+
+.lock-icon { font-size: 3rem; transition: all .6s; }
+.lock-icon.open { animation: unlockBounce .5s cubic-bezier(.2,1.4,.4,1); }
+@keyframes unlockBounce { 0%{transform:scale(1)} 50%{transform:scale(1.4) rotate(-15deg)} 100%{transform:scale(1) rotate(0)} }
+
+/* ════════════════════════════════════════
+   RETO 3 – MURAL DE LA CIUDADANÍA
+════════════════════════════════════════ */
+.mural-board {
+  position: relative; width: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
+  border: 1px solid rgba(201,162,39,.15);
+  min-height: 340px; overflow: hidden;
+}
+.mural-board svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+.deputies-row, .concepts-row {
+  display: flex; flex-wrap: wrap; justify-content: space-around;
+  position: relative; z-index: 2; padding: 16px 8px;
+}
+.deputy-chip, .concept-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 10px; cursor: pointer; border: 2px solid transparent;
+  transition: all .25s; text-align: center;
+  user-select: none; min-width: 100px;
+  background: rgba(0,0,0,.4);
+}
+.deputy-chip { border-color: rgba(201,162,39,.25); }
+.concept-chip { border-color: rgba(100,140,255,.25); }
+.deputy-chip:hover, .concept-chip:hover { transform: scale(1.06); }
+.deputy-chip.selected { border-color: var(--gold); background: rgba(61,0,21,.8); box-shadow: 0 0 14px rgba(201,162,39,.4); }
+.concept-chip.selected { border-color: #64aaff; background: rgba(20,30,70,.8); box-shadow: 0 0 14px rgba(100,180,255,.4); }
+.deputy-chip.connected { border-color: #4caf50; background: rgba(13,40,20,.7); }
+.concept-chip.connected { border-color: #4caf50; background: rgba(13,40,20,.7); }
+.deputy-avatar { font-size: 2rem; }
+.deputy-name { font-family: 'Cinzel'; font-size: .65rem; color: var(--gold-lt); letter-spacing: .05em; line-height: 1.3; }
+.concept-label { font-family: 'Cinzel'; font-size: .65rem; color: #aac8ff; line-height: 1.3; }
+.concept-icon { font-size: 1.5rem; }
+
+.mural-divider {
+  height: 2px; background: linear-gradient(90deg, transparent, rgba(201,162,39,.3), transparent);
+  margin: 0 16px;
+}
+.mural-instructions {
+  text-align: center; padding: 10px;
+  font-family: 'EB Garamond'; font-style: italic;
+  font-size: .85rem; color: rgba(255,255,255,.4);
+}
+
+/* Constitution scroll */
+.constitution-scroll {
+  margin-top: 16px; padding: 24px 28px;
+  background: linear-gradient(135deg, var(--parchment) 0%, var(--parch-dk) 100%);
+  border: 2px solid var(--gold-dk);
+  color: var(--ink-lt);
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .8s, transform .8s;
+  position: relative; overflow: hidden;
+}
+.constitution-scroll.show { opacity: 1; transform: translateY(0); }
+.constitution-scroll::before {
+  content: ''; position: absolute; inset: 6px;
+  border: 1px solid rgba(139,105,20,.3); pointer-events: none;
+}
+.scroll-title {
+  font-family: 'Cinzel Decorative'; font-size: 1.1rem; color: var(--crimson);
+  text-align: center; margin-bottom: 12px;
+}
+.scroll-text {
+  font-family: 'EB Garamond'; font-size: .92rem; line-height: 1.8;
+  color: var(--ink-lt); columns: 2; column-gap: 24px;
+}
+@media(max-width:600px) { .scroll-text { columns: 1; } }
+
+/* ════════════════════════════════════════
+   VICTORY MODAL
+════════════════════════════════════════ */
+#victory-modal {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(5,1,10,.96);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 24px; padding: 24px; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity 1s;
+}
+#victory-modal.show { opacity: 1; pointer-events: all; }
+
+.victory-crest { font-size: 5rem; animation: victoryPulse 2s ease-in-out infinite; }
+@keyframes victoryPulse { 0%,100%{text-shadow:0 0 20px rgba(201,162,39,.6)} 50%{text-shadow:0 0 60px rgba(201,162,39,.9)} }
+
+.victory-title {
+  font-family: 'Cinzel Decorative'; font-weight: 900;
+  font-size: clamp(1.6rem, 4vw, 2.8rem); color: var(--gold-lt);
+  text-shadow: 0 2px 40px rgba(201,162,39,.6);
+  line-height: 1.2;
+}
+.victory-sub {
+  font-family: 'Cinzel'; font-size: 1rem; color: var(--marble-dk);
+  letter-spacing: .08em; max-width: 500px;
+}
+.victory-pepa {
+  font-family: 'EB Garamond'; font-style: italic;
+  font-size: 1.1rem; color: var(--parch-dk);
+  max-width: 500px; line-height: 1.7;
+  padding: 20px 28px;
+  border-top: 1px solid rgba(201,162,39,.3);
+  border-bottom: 1px solid rgba(201,162,39,.3);
+}
+.victory-btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+
+.btn-gold {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--gold-dk) 0%, var(--gold) 50%, var(--gold-dk) 100%);
+  background-size: 200%;
+  border: none; font-family: 'Cinzel'; font-size: .85rem;
+  letter-spacing: .1em; color: var(--ink); cursor: pointer;
+  animation: shimmer 2.5s linear infinite;
+  transition: transform .2s;
+}
+.btn-gold:hover { transform: scale(1.05); }
+@keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+.btn-ghost {
+  padding: 14px 32px;
+  background: transparent;
+  border: 1px solid rgba(201,162,39,.4); font-family: 'Cinzel'; font-size: .85rem;
+  letter-spacing: .1em; color: var(--gold); cursor: pointer;
+  transition: all .2s;
+}
+.btn-ghost:hover { background: rgba(201,162,39,.1); border-color: var(--gold); }
+
+/* CREDITS MODAL */
+#credits-modal {
+  position: fixed; inset: 0; z-index: 210;
+  background: rgba(5,1,10,.97);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px; padding: 32px; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity .6s;
+}
+#credits-modal.show { opacity: 1; pointer-events: all; }
+#credits-modal h2 { font-family: 'Cinzel Decorative'; font-size: 1.5rem; color: var(--gold-lt); }
+#credits-modal p  { font-family: 'EB Garamond'; font-size: .95rem; color: var(--marble-dk); max-width: 460px; line-height: 1.7; }
+.credits-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.credits-list li { font-family: 'Cinzel'; font-size: .75rem; color: var(--gold); letter-spacing: .1em; }
+</style>
+</head>
+<body>
+
+<!-- ATMOSPHERE -->
+<div class="cadiz-bg"></div>
+<div class="stars"></div>
+<div class="marble-table"></div>
+<div class="city-silhouette"></div>
+
+<!-- PARTICLE CANVAS -->
+<canvas id="particleCanvas"></canvas>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-eyebrow">Cádiz · 19 de Marzo de 1812</div>
+    <h1>El Cofre de la Constitución</h1>
+    <p>El navío atraca en Cádiz, ciudad que resiste a Napoleón. El Capitán te entrega el Cofre de la Nación. Dentro están los borradores de <em>La Pepa</em>. Tu misión: salvar la primera Constitución Española.</p>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-strip">
+    <div class="prog-pip" id="p1"><span class="icon">📜</span> El Triaje</div>
+    <div class="prog-pip" id="p2"><span class="icon">🔐</span> El Candado</div>
+    <div class="prog-pip" id="p3"><span class="icon">🕸️</span> El Mural</div>
+  </div>
+
+  <!-- ══ RETO 1: TRIAJE ══ -->
+  <div class="card" id="card1">
+    <div class="success-overlay" id="success1">
+      <div class="tick">⚖️</div>
+      <p>¡Leyes clasificadas correctamente!</p>
+    </div>
+    <div class="card-inner">
+      <div class="card-header">
+        <div class="card-num">I</div>
+        <div>
+          <div class="card-title">El Triaje Legislativo</div>
+          <div class="card-subtitle">Arrastra cada artículo al bando correcto: Liberal o Absolutista</div>
+        </div>
+      </div>
+      <div class="tinder-arena">
+        <!-- LEFT: Absolutist -->
+        <div class="tinder-zone absolut" id="zone-absolut" data-zone="absolut">
+          <div class="zone-icon">👑</div>
+          <div class="zone-label">ANTIGUO RÉGIMEN<br><em style="font-size:.65rem;opacity:.7">Absolutismo</em></div>
+        </div>
+        <!-- CENTER: card stack -->
+        <div class="card-stack" id="cardStack"></div>
+        <!-- RIGHT: Liberal -->
+        <div class="tinder-zone liberal" id="zone-liberal" data-zone="liberal">
+          <div class="zone-icon">🕊️</div>
+          <div class="zone-label">CONSTITUCIONAL<br><em style="font-size:.65rem;opacity:.7">Liberalismo</em></div>
+        </div>
+      </div>
+      <div class="tinder-counter" id="tinderCounter">Artículos restantes: 10</div>
+      <div class="key-hint">Arrastra la tarjeta · o pulsa ← → en el teclado</div>
+    </div>
+  </div>
+
+  <!-- ══ RETO 2: CANDADO ══ -->
+  <div class="card" id="card2">
+    <div class="success-overlay" id="success2">
+      <div class="tick">🔓</div>
+      <p>¡El Cofre ha sido abierto!</p>
+    </div>
+    <div class="card-inner">
+      <div class="card-header">
+        <div class="card-num">II</div>
+        <div>
+          <div class="card-title">El Candado Cronológico</div>
+          <div class="card-subtitle">Resuelve los acertijos para obtener la combinación: el año de La Pepa</div>
+        </div>
+      </div>
+      <div class="lock-layout">
+        <div class="riddles-col" id="riddlesCol"></div>
+        <div class="lock-col">
+          <div class="lock-icon" id="lockIcon">🔒</div>
+          <div class="lock-display" id="lockDisplay">
+            <div class="lock-digit" id="ld0">_</div>
+            <div class="lock-digit" id="ld1">_</div>
+            <div class="lock-digit" id="ld2">_</div>
+            <div class="lock-digit" id="ld3">_</div>
+          </div>
+          <div style="font-family:'Cinzel';font-size:.65rem;color:var(--gold);letter-spacing:.15em">COMBINACIÓN</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RETO 3: MURAL ══ -->
+  <div class="card" id="card3">
+    <div class="success-overlay" id="success3">
+      <div class="tick">📜</div>
+      <p>¡Todos los diputados conectados!</p>
+    </div>
+    <div class="card-inner">
+      <div class="card-header">
+        <div class="card-num">III</div>
+        <div>
+          <div class="card-title">El Mural de la Ciudadanía</div>
+          <div class="card-subtitle">Conecta cada diputado con su concepto clave — construye la Constitución</div>
+        </div>
+      </div>
+      <div class="mural-board" id="muralBoard">
+        <svg id="muralSvg"></svg>
+        <div class="deputies-row" id="deputiesRow"></div>
+        <div class="mural-divider"></div>
+        <div class="mural-instructions">Pulsa un diputado y luego su concepto para trazar el hilo</div>
+        <div class="mural-divider"></div>
+        <div class="concepts-row" id="conceptsRow"></div>
+      </div>
+      <div class="constitution-scroll" id="scroll">
+        <div class="scroll-title">✦ CONSTITUCIÓN POLÍTICA DE LA MONARQUÍA ESPAÑOLA · 1812 ✦</div>
+        <div class="scroll-text">
+          La Nación española es la reunión de todos los españoles de ambos hemisferios. La soberanía reside esencialmente en la Nación, y por lo mismo pertenece a ésta exclusivamente el derecho de establecer sus leyes fundamentales. El gobierno de la Nación española es una Monarquía moderada hereditaria. La potestad de hacer las leyes reside en las Cortes con el Rey. La potestad de ejecutar las leyes reside en el Rey. La potestad de aplicar las leyes en las causas civiles y criminales reside en los Tribunales establecidos por la ley. Todo español tiene obligación de amar a su Patria y de ser justo y benéfico. La instrucción primaria será obligatoria para todos los ciudadanos.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- VICTORY MODAL -->
+<div id="victory-modal">
+  <div class="victory-crest">👑</div>
+  <div class="victory-title">¡HAS SUPERADO EL JUEGO!</div>
+  <div class="victory-sub">Has completado todas las pruebas y salvado la Constitución de 1812.<br>¡Enhorabuena, Capitán!</div>
+  <div class="victory-pepa">
+    "La Nación española es libre e independiente, y no es ni puede ser patrimonio de ninguna familia ni persona."<br>
+    <em style="font-size:.85rem;opacity:.7">— Art. 2, Constitución de 1812</em>
+  </div>
+  <div class="victory-btns">
+    <button class="btn-gold" onclick="window.location.href='Pantalla1.html'">↺ Volver al principio</button>
+    <button class="btn-ghost" onclick="window.close(); setTimeout(()=>{ window.location.href='about:blank'; }, 100);">✕ Salir</button>
+  </div>
+</div>
+
+<!-- CREDITS -->
+<div id="credits-modal">
+  <h2>✦ Créditos ✦</h2>
+  <p>Esta experiencia educativa ha sido diseñada para acercar la historia de España a las nuevas generaciones, siguiendo el currículo LOMLOE.</p>
+  <ul class="credits-list">
+    <li>Contenido histórico — Cortes de Cádiz 1810–1812</li>
+    <li>Diseño de niveles — Escape Room Pedagógico</li>
+    <li>Currículo — Historia de España · 2.º Bachillerato</li>
+    <li>Competencia cívica y constitucional — LOMLOE</li>
+  </ul>
+  <button class="btn-ghost" style="margin-top:16px" onclick="document.getElementById('credits-modal').classList.remove('show')">← Volver</button>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   PARTICLE ENGINE (Gold Confetti)
+══════════════════════════════════════════════ */
+const canvas = document.getElementById('particleCanvas');
+const ctx    = canvas.getContext('2d');
+canvas.width  = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', () => {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+let particles = [];
+let particleActive = false;
+
+function spawnParticles(count = 120) {
+  particleActive = true;
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: -20,
+      vx: (Math.random() - .5) * 3,
+      vy: Math.random() * 4 + 2,
+      r: Math.random() * 5 + 2,
+      color: ['#c9a227','#f0c040','#fff8dc','#8b6914','#ffd700'][Math.floor(Math.random()*5)],
+      rot: Math.random() * 360,
+      rotV: (Math.random() - .5) * 8,
+      life: 1
+    });
+  }
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!particleActive && particles.length === 0) { requestAnimationFrame(animateParticles); return; }
+  particles = particles.filter(p => p.life > 0);
+  for (const p of particles) {
+    p.x += p.vx; p.y += p.vy; p.rot += p.rotV;
+    p.life -= 0.008; p.vy += 0.05;
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot * Math.PI / 180);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+    ctx.restore();
+    if (p.y > canvas.height + 20) p.life = 0;
+  }
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+/* ══════════════════════════════════════════════
+   GLOBAL STATE
+══════════════════════════════════════════════ */
+const state = { done: [false, false, false] };
+
+function markDone(i) {
+  if (state.done[i]) return;
+  state.done[i] = true;
+  document.getElementById('p' + (i+1)).classList.add('done');
+  document.getElementById('success' + (i+1)).classList.add('show');
+  spawnParticles(80);
+  setTimeout(() => checkAll(), 800);
+}
+
+function checkAll() {
+  if (state.done.every(Boolean)) {
+    setTimeout(() => {
+      spawnParticles(200);
+      document.getElementById('victory-modal').classList.add('show');
+    }, 600);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   RETO 1 – TRIAJE LEGISLATIVO
+══════════════════════════════════════════════ */
+const laws = [
+  { text: 'Soberanía Nacional', hint: '"La soberanía reside en la Nación"', icon: '🏛️', correct: 'liberal' },
+  { text: 'La Santa Inquisición', hint: 'Tribunal de fe del Antiguo Régimen', icon: '🔥', correct: 'absolut' },
+  { text: 'División de Poderes', hint: 'Ejecutivo, Legislativo, Judicial', icon: '⚖️', correct: 'liberal' },
+  { text: 'Poder Absoluto del Rey', hint: 'El monarca gobierna sin limitación', icon: '👑', correct: 'absolut' },
+  { text: 'Libertad de Imprenta', hint: 'El pueblo puede expresarse libremente', icon: '📰', correct: 'liberal' },
+  { text: 'Privilegios Nobiliarios', hint: 'Derechos exclusivos de la aristocracia', icon: '🎖️', correct: 'absolut' },
+  { text: 'Sufragio Censitario', hint: 'Voto restringido a varones con propiedad', icon: '🗳️', correct: 'liberal' },
+  { text: 'Mayorazgo y Vinculación', hint: 'Tierras nobiliarias inalienables', icon: '🏰', correct: 'absolut' },
+  { text: 'Igualdad ante la Ley', hint: 'Ningún fuero protege a un ciudadano sobre otro', icon: '⚖', correct: 'liberal' },
+  { text: 'Diezmo Eclesiástico Obligatorio', hint: 'Impuesto forzoso a la Iglesia', icon: '⛪', correct: 'absolut' },
+];
+
+let lawIdx   = 0;
+let r1done   = false;
+let dragCard = null, startX = 0, startY = 0, curX = 0, curY = 0;
+let lawCorrect = 0;
+
+function buildLaws() {
+  const stack = document.getElementById('cardStack');
+  stack.innerHTML = '';
+  laws.forEach((law, i) => {
+    const c = document.createElement('div');
+    c.className = 'law-card';
+    c.style.zIndex = laws.length - i;
+    c.style.transform = `rotate(${(Math.random()-0.5)*3}deg) translateY(${i*2}px)`;
+    c.dataset.correct = law.correct;
+    c.dataset.idx     = i;
+    c.innerHTML = `<div class="law-icon">${law.icon}</div>
+      <div class="law-text">${law.text}</div>
+      <div class="law-hint">${law.hint}</div>`;
+    stack.appendChild(c);
+    addDragToCard(c);
+  });
+  updateCounter();
+}
+
+function updateCounter() {
+  const rem = laws.length - lawCorrect;
+  document.getElementById('tinderCounter').textContent =
+    rem > 0 ? `Artículos restantes: ${rem}` : '¡Todos clasificados!';
+}
+
+function addDragToCard(card) {
+  card.addEventListener('mousedown', e => {
+    if (r1done || card.dataset.done) return;
+    dragCard = card;
+    const rect = card.getBoundingClientRect();
+    startX = e.clientX - rect.left - rect.width/2;
+    startY = e.clientY - rect.top  - rect.height/2;
+    card.classList.add('dragging');
+    card.style.transition = 'none';
+    card.style.zIndex = 999;
+  });
+  // touch
+  card.addEventListener('touchstart', e => {
+    if (r1done || card.dataset.done) return;
+    dragCard = card;
+    const t = e.touches[0];
+    const rect = card.getBoundingClientRect();
+    startX = t.clientX - rect.left - rect.width/2;
+    startY = t.clientY - rect.top  - rect.height/2;
+    card.classList.add('dragging');
+    card.style.transition = 'none';
+    card.style.zIndex = 999;
+  }, {passive:true});
+}
+
+document.addEventListener('mousemove', e => {
+  if (!dragCard) return;
+  const rect = document.getElementById('cardStack').getBoundingClientRect();
+  curX = e.clientX - rect.left - rect.width/2 - startX;
+  curY = e.clientY - rect.top  - rect.height/2 - startY;
+  const rot = curX / 12;
+  dragCard.style.transform = `translate(${curX}px, ${curY}px) rotate(${rot}deg)`;
+});
+
+document.addEventListener('touchmove', e => {
+  if (!dragCard) return;
+  const t = e.touches[0];
+  const rect = document.getElementById('cardStack').getBoundingClientRect();
+  curX = t.clientX - rect.left - rect.width/2 - startX;
+  curY = t.clientY - rect.top  - rect.height/2 - startY;
+  const rot = curX / 12;
+  dragCard.style.transform = `translate(${curX}px, ${curY}px) rotate(${rot}deg)`;
+}, {passive:true});
+
+document.addEventListener('mouseup', releaseDrag);
+document.addEventListener('touchend',  releaseDrag);
+
+function releaseDrag() {
+  if (!dragCard) return;
+  const threshold = 90;
+  if (Math.abs(curX) >= threshold) {
+    const chosenZone = curX > 0 ? 'liberal' : 'absolut';
+    resolveCard(dragCard, chosenZone);
+  } else {
+    // snap back
+    dragCard.style.transition = 'transform .35s cubic-bezier(.4,0,.2,1)';
+    dragCard.style.transform  = `rotate(${(Math.random()-0.5)*3}deg)`;
+    dragCard.classList.remove('dragging');
+  }
+  dragCard = null; curX = 0; curY = 0;
+}
+
+function resolveCard(card, zone) {
+  const correct = card.dataset.correct;
+  card.dataset.done = '1';
+  if (zone === correct) {
+    card.classList.add('flash-' + (correct === 'liberal' ? 'liberal' : 'absolut'));
+    lawCorrect++;
+  } else {
+    card.classList.add('flash-absolut'); // error flash
+  }
+  const dir = zone === 'liberal' ? 1 : -1;
+  card.style.transition = 'transform .4s, opacity .4s';
+  card.style.transform  = `translate(${dir * 400}px, -40px) rotate(${dir * 20}deg)`;
+  card.style.opacity    = '0';
+  setTimeout(() => { card.remove(); updateCounter(); checkR1Done(); }, 420);
+}
+
+function checkR1Done() {
+  if (document.getElementById('cardStack').children.length === 0 && !r1done) {
+    r1done = true;
+    setTimeout(() => markDone(0), 300);
+  }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (r1done) return;
+  const top = document.querySelector('#cardStack .law-card:last-child');
+  if (!top || top.dataset.done) return;
+  if (e.key === 'ArrowRight') { simulateSwipe(top, 'liberal'); }
+  if (e.key === 'ArrowLeft')  { simulateSwipe(top, 'absolut'); }
+});
+
+function simulateSwipe(card, zone) {
+  card.dataset.done = '1';
+  const dir = zone === 'liberal' ? 1 : -1;
+  card.style.transition = 'transform .35s, opacity .35s';
+  card.style.transform = `translate(${dir*400}px,-40px) rotate(${dir*20}deg)`;
+  card.style.opacity = '0';
+  if (zone === card.dataset.correct) {
+    lawCorrect++;
+    card.classList.add('flash-liberal');
+  } else {
+    card.classList.add('flash-absolut');
+  }
+  setTimeout(() => { card.remove(); updateCounter(); checkR1Done(); }, 380);
+}
+
+// Drop zones visual feedback
+['zone-liberal','zone-absolut'].forEach(id => {
+  const z = document.getElementById(id);
+  z.addEventListener('mouseenter', () => z.classList.add('drag-over'));
+  z.addEventListener('mouseleave', () => z.classList.remove('drag-over'));
+  z.addEventListener('click', () => {
+    if (r1done) return;
+    const top = document.querySelector('#cardStack .law-card:last-child');
+    if (top && !top.dataset.done) {
+      const zone = id === 'zone-liberal' ? 'liberal' : 'absolut';
+      simulateSwipe(top, zone);
+    }
+  });
+});
+
+buildLaws();
+
+/* ══════════════════════════════════════════════
+   RETO 2 – CANDADO
+══════════════════════════════════════════════ */
+const riddles = [
+  { q: 'La Constitución se promulgó un 19 de marzo. ¿Qué santo de ese día le dio el sobrenombre cariñoso de "La Pepa"? Escribe el primer dígito del año (es la primera cifra del año en que se aprobó).', ans: '1', hint: '19 de marzo, San José. Año 1812 → primera cifra' },
+  { q: 'Las Cortes se inauguraron en la Isla de León en 1810. Si sumas las cifras del año en que se aprobó La Pepa (1+8+1+2) obtienes 12; el dígito de las unidades de 12 está aquí. ¿Cuál es?', ans: '8', hint: '1+8+1+2 = 12 — segundo dígito del año 1812' },
+  { q: 'Carlos IV y Fernando VII fueron forzados a abdicar en Bayona en 1808. ¿Cuántos años transcurrieron desde Bayona hasta la promulgación de La Pepa? (un solo dígito)', ans: '1', hint: '1812 − 1808 = 4… pero busca el tercer dígito de 1812' },
+  { q: 'José I Bonaparte reinó desde 1808. La Pepa fue derogada por Fernando VII en 1814. ¿Cuántos años estuvo vigente antes de esa derogación? (un solo dígito)', ans: '2', hint: '1814 − 1812 = 2 — coincide con el último dígito del año' },
+];
+
+const digits   = ['1','8','1','2'];
+let digitsFound = [false,false,false,false];
+
+function buildRiddles() {
+  const col = document.getElementById('riddlesCol');
+  riddles.forEach((r, i) => {
+    const d = document.createElement('div');
+    d.className = 'riddle';
+    d.innerHTML = `<div class="riddle-q">${i+1}. ${r.q}</div>
+      <input type="text" class="riddle-input" maxlength="1" placeholder="?" data-i="${i}" id="ri${i}">
+      <span class="riddle-badge" id="rb${i}"></span>`;
+    col.appendChild(d);
+    const inp = d.querySelector('input');
+    inp.addEventListener('input', () => checkDigit(i, inp));
+  });
+}
+
+function checkDigit(i, inp) {
+  const val = inp.value.trim();
+  if (val === digits[i]) {
+    inp.classList.remove('wrong');
+    inp.classList.add('correct');
+    inp.disabled = true;
+    document.getElementById('rb'+i).textContent = '✔';
+    digitsFound[i] = true;
+    const ld = document.getElementById('ld'+i);
+    ld.textContent = digits[i];
+    ld.classList.add('lit');
+    if (digitsFound.every(Boolean)) unlockCofre();
+  } else if (val.length === 1) {
+    inp.classList.add('wrong');
+    inp.value = '';
+    setTimeout(() => { inp.classList.remove('wrong'); }, 350);
+  }
+}
+
+function unlockCofre() {
+  const icon = document.getElementById('lockIcon');
+  icon.textContent = '🔓';
+  icon.classList.add('open');
+  spawnParticles(60);
+  setTimeout(() => markDone(1), 700);
+}
+
+buildRiddles();
+
+/* ══════════════════════════════════════════════
+   RETO 3 – MURAL DE LA CIUDADANÍA
+══════════════════════════════════════════════ */
+const deputies = [
+  { id:'arguelles',  name:'Agustín de Argüelles',  icon:'👴', match:'imprenta' },
+  { id:'mejia',      name:'José Mejía Lequerica',   icon:'🧔', match:'igualdad' },
+  { id:'muñoz',      name:'Diego Muñoz Torrero',    icon:'⛪', match:'soberania' },
+  { id:'espiga',     name:'José Espiga y Gadea',    icon:'📚', match:'educacion' },
+  { id:'toreno',     name:'Conde de Toreno',        icon:'🎩', match:'division' },
+  { id:'capmany',    name:'Antonio de Capmany',     icon:'✒️', match:'patria' },
+];
+const concepts = [
+  { id:'imprenta',  label:'Libertad de Imprenta', icon:'📰' },
+  { id:'igualdad',  label:'Igualdad de Derechos',  icon:'⚖️' },
+  { id:'soberania', label:'Soberanía Nacional',    icon:'🏛️' },
+  { id:'educacion', label:'Instrucción Pública',   icon:'🎓' },
+  { id:'division',  label:'División de Poderes',   icon:'🏛' },
+  { id:'patria',    label:'Defensa de la Patria',  icon:'🛡️' },
+];
+
+let selectedDeputy = null;
+const connections  = {}; // deputyId -> conceptId
+let r3done = false;
+
+function buildMural() {
+  const dRow = document.getElementById('deputiesRow');
+  const cRow = document.getElementById('conceptsRow');
+
+  deputies.forEach(dep => {
+    const el = document.createElement('div');
+    el.className = 'deputy-chip';
+    el.id = 'dep-' + dep.id;
+    el.dataset.id = dep.id;
+    el.innerHTML = `<div class="deputy-avatar">${dep.icon}</div>
+      <div class="deputy-name">${dep.name}</div>`;
+    el.addEventListener('click', () => selectDeputy(dep.id));
+    dRow.appendChild(el);
+  });
+
+  concepts.forEach(con => {
+    const el = document.createElement('div');
+    el.className = 'concept-chip';
+    el.id = 'con-' + con.id;
+    el.dataset.id = con.id;
+    el.innerHTML = `<div class="concept-icon">${con.icon}</div>
+      <div class="concept-label">${con.label}</div>`;
+    el.addEventListener('click', () => selectConcept(con.id));
+    cRow.appendChild(el);
+  });
+}
+
+function selectDeputy(id) {
+  if (r3done) return;
+  if (connections[id]) return; // already connected
+  document.querySelectorAll('.deputy-chip').forEach(c => c.classList.remove('selected'));
+  selectedDeputy = id;
+  document.getElementById('dep-' + id).classList.add('selected');
+}
+
+function selectConcept(conceptId) {
+  if (r3done || !selectedDeputy) return;
+  if (Object.values(connections).includes(conceptId)) return;
+
+  const dep    = deputies.find(d => d.id === selectedDeputy);
+  if (dep.match !== conceptId) {
+    // Wrong - flash red
+    document.getElementById('con-' + conceptId).style.background = 'rgba(139,26,26,.4)';
+    setTimeout(() => {
+      document.getElementById('con-' + conceptId).style.background = '';
+    }, 500);
+    document.getElementById('dep-' + selectedDeputy).classList.remove('selected');
+    selectedDeputy = null;
+    return;
+  }
+
+  // Correct
+  connections[selectedDeputy] = conceptId;
+  document.getElementById('dep-' + selectedDeputy).classList.remove('selected');
+  document.getElementById('dep-' + selectedDeputy).classList.add('connected');
+  document.getElementById('con-' + conceptId).classList.add('connected');
+  drawLine(selectedDeputy, conceptId);
+  selectedDeputy = null;
+
+  if (Object.keys(connections).length === deputies.length) {
+    r3done = true;
+    document.getElementById('scroll').classList.add('show');
+    spawnParticles(100);
+    setTimeout(() => markDone(2), 900);
+  }
+}
+
+function drawLine(depId, conId) {
+  const svg  = document.getElementById('muralSvg');
+  const board = document.getElementById('muralBoard');
+  const bRect = board.getBoundingClientRect();
+
+  const dEl  = document.getElementById('dep-' + depId);
+  const cEl  = document.getElementById('con-' + conId);
+  const dR   = dEl.getBoundingClientRect();
+  const cR   = cEl.getBoundingClientRect();
+
+  const x1 = dR.left + dR.width/2  - bRect.left;
+  const y1 = dR.top  + dR.height   - bRect.top;
+  const x2 = cR.left + cR.width/2  - bRect.left;
+  const y2 = cR.top               - bRect.top;
+
+  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+  line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+  line.setAttribute('stroke', '#c9a227');
+  line.setAttribute('stroke-width', '2');
+  line.setAttribute('stroke-dasharray', '6,4');
+  line.setAttribute('opacity', '.8');
+  svg.appendChild(line);
+
+  // Animate stroke
+  const len = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+  line.setAttribute('stroke-dasharray', len);
+  line.setAttribute('stroke-dashoffset', len);
+  line.style.transition = 'stroke-dashoffset .5s ease';
+  setTimeout(() => line.setAttribute('stroke-dashoffset', '0'), 50);
+}
+
+buildMural();
+
+/* ══════════════════════════════════════════════
+   VICTORY & RESTART
+══════════════════════════════════════════════ */
+function restartExperience() {
+  location.reload();
+}
+function showCredits() {
+  document.getElementById('credits-modal').classList.add('show');
+}
+</script>
+
+
+
+<!-- ══════ GUÍA DE PRUEBAS ══════ -->
+
+<style>
+#guia-fab{
+  position:fixed;top:14px;right:14px;z-index:99990;
+  display:flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,#3d1f0d,#6b3a2a);
+  border:1px solid #c9973a;
+  color:#f0d080;font-family:'Cinzel','IM Fell English',Georgia,serif;
+  font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+  box-shadow:0 4px 14px rgba(0,0,0,.55),inset 0 1px 0 rgba(232,184,75,.25);
+  transition:transform .2s,box-shadow .2s;
+}
+#guia-fab:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.6)}
+#guia-overlay{
+  position:fixed;inset:0;z-index:99991;
+  background:rgba(20,10,5,.78);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+#guia-overlay.visible{display:flex;animation:guia-fade .35s ease}
+@keyframes guia-fade{from{opacity:0}to{opacity:1}}
+#guia-box{
+  width:100%;max-width:480px;max-height:88vh;overflow:auto;
+  border-radius:10px;
+  background:linear-gradient(160deg,#f5e6c8 0%,#e8d5a3 100%);
+  border:3px solid #b5651d;
+  box-shadow:0 20px 60px rgba(0,0,0,.7),inset 0 0 40px rgba(112,66,20,.12);
+  font-family:'IM Fell English','Crimson Text',Georgia,serif;color:#2c1810;
+  animation:guia-up .35s ease;
+}
+@keyframes guia-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+#guia-box .guia-head{
+  padding:14px 20px;
+  background:linear-gradient(90deg,#3d1f0d,#6b3a2a);
+  border-bottom:2px solid #c9973a;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;
+}
+#guia-box .guia-head span{
+  font-family:'Cinzel',serif;font-size:1rem;font-weight:700;
+  color:#e8b84b;letter-spacing:.06em;
+}
+#guia-box .guia-close{
+  background:none;border:none;color:#f0d080;font-size:1.3rem;
+  cursor:pointer;line-height:1;transition:transform .2s;
+}
+#guia-box .guia-close:hover{transform:scale(1.25)}
+#guia-box .guia-body{padding:20px 22px 6px}
+#guia-box .guia-entry{display:flex;gap:14px;margin-bottom:18px}
+#guia-box .guia-entry .guia-icon{font-size:1.85rem;line-height:1;flex-shrink:0}
+#guia-box .guia-entry h3{
+  font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;
+  color:#3d1f0d;margin:0 0 6px;letter-spacing:.04em;
+}
+#guia-box .guia-entry p{
+  font-size:.82rem;line-height:1.55;color:#4a2c1a;margin:0;
+  font-family:'Crimson Text','IM Fell English',Georgia,serif;
+}
+#guia-box .guia-foot{
+  padding:10px 20px 16px;border-top:1px solid #c4a97d;
+  text-align:center;font-style:italic;font-size:.72rem;color:#704214;
+}
+</style>
+<button id="guia-fab" type="button" aria-label="Guía de las pruebas">📖 Guía</button>
+<div id="guia-overlay" role="dialog" aria-modal="true"><div id="guia-box"><div class="guia-head"><span>📖 Manual del Constituyente</span><button class="guia-close" type="button" aria-label="Cerrar">✕</button></div><div class="guia-body"><div class="guia-entry"><div class="guia-icon">💗</div><div><h3>Triaje legislativo</h3><p>Lee cada propuesta y deslízala a la derecha si es de espíritu liberal o a la izquierda si es absolutista. Una clasificación equivocada destellará en rojo.</p></div></div><div class="guia-entry"><div class="guia-icon">🔒</div><div><h3>Candado cronológico</h3><p>Ordena los acontecimientos clave del proceso constituyente en su secuencia histórica correcta. Solo el orden exacto liberará el candado del cofre.</p></div></div><div class="guia-entry"><div class="guia-icon">🏛️</div><div><h3>Mural de la ciudadanía</h3><p>Coloca cada principio constitucional en su lugar correspondiente del mural arrastrándolo hasta el hueco adecuado. Completa el mural para proclamar la nueva ciudadanía.</p></div></div></div><div class="guia-foot">"La soberanía reside esencialmente en la Nación." — Cádiz, 1812</div></div></div>
+
+<script>
+(function(){
+  function open(){document.getElementById('guia-overlay').classList.add('visible')}
+  function close(e){
+    if(!e||e.target.id==='guia-overlay'||e.currentTarget.classList.contains('guia-close'))
+      document.getElementById('guia-overlay').classList.remove('visible')
+  }
+  function ready(){
+    document.getElementById('guia-fab').addEventListener('click',open);
+    document.getElementById('guia-overlay').addEventListener('click',close);
+    document.querySelector('#guia-box .guia-close').addEventListener('click',function(e){
+      e.stopPropagation();
+      document.getElementById('guia-overlay').classList.remove('visible');
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape') document.getElementById('guia-overlay').classList.remove('visible');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready);
+  else ready();
+})();
+</script>
+
+<!-- ══════ FIN GUÍA DE PRUEBAS ══════ -->
+<!-- LV-SEQ-START -->
+<style>
+  .reto-card.lv-hidden, .card.lv-hidden { display:none !important; }
+  #lv-next-panel {
+    position: relative; margin: 28px auto; max-width: 540px;
+    padding: 28px 32px; text-align: center;
+    background: linear-gradient(135deg,#2a1810,#1a0f08);
+    border: 2px solid #c9962a; border-radius: 8px;
+    box-shadow: 0 0 40px rgba(201,150,42,.45);
+    display: none; animation: lv-fade .6s ease both; z-index: 50;
+  }
+  #lv-next-panel.show { display:block; }
+  #lv-next-panel h3 {
+    font-family: 'Cinzel', 'IM Fell English', serif;
+    color: #f0d78c; font-size: 1.2rem; letter-spacing: .1em; margin: 0 0 12px;
+  }
+  #lv-next-panel p {
+    color: #d4c5a3; font-style: italic; font-size: .9rem;
+    margin: 0 0 20px; line-height: 1.6; font-family: 'IM Fell English','EB Garamond',serif;
+  }
+  #lv-next-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg,#c9962a,#f0d78c,#c9962a);
+    background-size: 200%;
+    border: 2px solid #6b3a2a; border-radius: 6px;
+    color: #2a1810; font-family: 'Cinzel', serif;
+    font-size: .95rem; font-weight: 700; letter-spacing: .12em;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(201,150,42,.55);
+    transition: transform .2s;
+  }
+  #lv-next-btn:hover { transform: scale(1.05); }
+  @keyframes lv-fade { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+<div id="lv-next-panel">
+  <h3>⚓ ¡Pantalla completada!</h3>
+  <p>Has completado la experiencia.</p>
+  <button id="lv-next-btn" type="button"> →</button>
+</div>
+<script>
+(function(){
+  const NEXT_URL = '';
+  const cards = ['card1','card2','card3'].map(id=>document.getElementById(id)).filter(Boolean);
+  if (cards.length < 2) return;
+  cards.slice(1).forEach(c=>c.classList.add('lv-hidden'));
+  let current = 0;
+  const seen = new Set();
+  function advance(){
+    if (current >= cards.length - 1) {
+      if (!NEXT_URL) return; // last screen: leave original victory flow alone
+      ['exit-panel','modalFinal'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('show','visible'); el.style.display='none'; }
+      });
+      const panel = document.getElementById('lv-next-panel');
+      panel.classList.add('show');
+      panel.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    current++;
+    const next = cards[current];
+    next.classList.remove('lv-hidden');
+    setTimeout(()=>next.scrollIntoView({behavior:'smooth', block:'start'}), 120);
+  }
+  function hook(){
+    const orig = window.markDone;
+    if (typeof orig !== 'function') { setTimeout(hook, 100); return; }
+    window.markDone = function(arg){
+      const r = orig.apply(this, arguments);
+      const k = String(arg);
+      if (!seen.has(k)) { seen.add(k); setTimeout(advance, 1000); }
+      return r;
+    };
+  }
+  hook();
+  const btn = document.getElementById('lv-next-btn');
+  if (NEXT_URL) {
+    btn.addEventListener('click', ()=>{ window.location.href = NEXT_URL; });
+  } else {
+    btn.style.display = 'none';
+  }
+})();
+</script>
+<!-- LV-SEQ-END -->
+
+</body>
+</html>

@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escritorio de Derrota — Escape Room S.XVIII</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & TOKENS ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --parchment:#f5e6c8;
+  --parchment-dark:#e8d5a3;
+  --parchment-shadow:#c4a97d;
+  --ink:#2c1810;
+  --ink-light:#4a2c1a;
+  --leather:#6b3a2a;
+  --leather-dark:#3d1f0d;
+  --gold:#c9973a;
+  --gold-light:#e8b84b;
+  --gold-pale:#f0d080;
+  --copper:#b5651d;
+  --wax:#8b1a1a;
+  --wax-light:#c0392b;
+  --sepia:#704214;
+  --green:#2d6a4f;
+  --green-light:#52b788;
+}
+
+body{
+  font-family:'IM Fell English',serif;
+  background:radial-gradient(ellipse at top,#3d1f0d 0%,#1a0a05 60%);
+  min-height:100vh;
+  color:var(--ink);
+  cursor:default;
+  overflow-x:hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#1a0a05}
+::-webkit-scrollbar-thumb{background:var(--copper);border-radius:3px}
+
+/* ── LAYOUT ── */
+#app{
+  max-width:520px;
+  margin:0 auto;
+  padding:20px 16px 60px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+}
+
+/* ── HEADER ── */
+.header{
+  text-align:center;
+  animation:fadeDown .8s ease both;
+}
+.header h1{
+  font-family:'Cinzel',serif;
+  font-size:1.4rem;
+  font-weight:900;
+  letter-spacing:.18em;
+  color:var(--gold-light);
+  text-shadow:0 0 24px rgba(232,184,75,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.header p{
+  font-style:italic;
+  font-size:.7rem;
+  color:var(--parchment-shadow);
+  margin-top:4px;
+}
+.progress-orbs{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-top:10px;
+}
+.orb{
+  width:14px;height:14px;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--copper),var(--leather-dark));
+  transition:background .5s,box-shadow .5s,transform .3s;
+}
+.orb.done{
+  background:radial-gradient(circle,var(--green-light),var(--green));
+  box-shadow:0 0 10px var(--green-light);
+  transform:scale(1.2);
+}
+.progress-count{color:var(--parchment-shadow);font-size:.7rem}
+
+/* ── DESK ── */
+#desk{
+  width:100%;
+  border-radius:14px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  position:relative;
+  background:linear-gradient(160deg,#5c3317 0%,#3d2008 40%,#2a1505 100%);
+  border:3px solid var(--copper);
+  box-shadow:0 20px 60px rgba(0,0,0,.7),
+             inset 0 1px 0 rgba(201,151,58,.3),
+             inset 0 0 40px rgba(0,0,0,.4);
+  overflow:hidden;
+}
+#desk::before{
+  content:'';
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(92deg,transparent 0px,transparent 18px,rgba(0,0,0,.04) 18px,rgba(0,0,0,.04) 19px);
+  pointer-events:none;
+  border-radius:14px;
+}
+
+/* ── MANUAL BTN ── */
+.manual-btn{
+  align-self:flex-end;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 12px;
+  border-radius:6px;
+  background:linear-gradient(135deg,var(--leather-dark),var(--leather));
+  border:1px solid var(--gold);
+  color:var(--gold-light);
+  font-family:'IM Fell English',serif;
+  font-size:.75rem;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+  transition:transform .2s,box-shadow .2s;
+  position:relative;z-index:1;
+}
+.manual-btn:hover{transform:scale(1.04);box-shadow:0 4px 14px rgba(0,0,0,.5)}
+
+/* ── RETO CARD ── */
+.reto-card{
+  border-radius:10px;
+  padding:16px;
+  border:2px solid var(--copper);
+  background:linear-gradient(135deg,var(--parchment),var(--parchment-dark));
+  box-shadow:0 4px 16px rgba(0,0,0,.2),inset 0 0 20px rgba(112,66,20,.08);
+  position:relative;
+  transition:border-color .5s,box-shadow .5s;
+  animation:fadeUp .6s ease both;
+}
+.reto-card.done{
+  border-color:var(--green);
+  box-shadow:0 0 18px rgba(45,106,79,.3),inset 0 0 20px rgba(45,106,79,.04);
+}
+.reto-card:nth-child(2){animation-delay:.1s}
+.reto-card:nth-child(3){animation-delay:.2s}
+.reto-card:nth-child(4){animation-delay:.3s}
+
+.card-header{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+}
+.card-num{
+  width:26px;height:26px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--copper));
+  color:var(--ink);
+  font-family:'IM Fell English',serif;
+  font-weight:700;
+  font-size:.85rem;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.card-title{
+  font-family:'Cinzel',serif;
+  font-size:.85rem;
+  font-weight:700;
+  color:var(--leather-dark);
+  transition:color .5s;
+}
+.reto-card.done .card-title{color:var(--green)}
+.card-icon{font-size:1rem}
+
+/* ── WAX SEAL ── */
+.wax-seal{
+  position:absolute;
+  top:-14px;right:-14px;
+  width:52px;height:52px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,var(--wax-light),var(--wax));
+  border:3px solid var(--gold-light);
+  box-shadow:0 4px 12px rgba(139,26,26,.5),inset 0 1px 3px rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;
+  opacity:0;
+  transform:scale(0) rotate(-30deg);
+  transition:opacity .4s,transform .4s cubic-bezier(.175,.885,.32,1.275);
+  z-index:10;
+  pointer-events:none;
+}
+.reto-card.done .wax-seal{
+  opacity:1;
+  transform:scale(1) rotate(0deg);
+}
+
+/* ── HINT TEXT ── */
+.hint{
+  font-style:italic;
+  font-size:.72rem;
+  color:var(--sepia);
+  text-align:center;
+  margin-bottom:8px;
+}
+
+/* ════════════════════════════
+   RETO 1 – LUPA OCR
+════════════════════════════ */
+#manuscript{
+  position:relative;
+  width:100%;
+  height:175px;
+  border-radius:6px;
+  overflow:hidden;
+  background:linear-gradient(135deg,var(--parchment-dark) 0%,var(--parchment) 60%,var(--parchment-shadow) 100%);
+  border:2px solid var(--copper);
+  box-shadow:inset 0 0 30px rgba(112,66,20,.25);
+  cursor:none;
+}
+.ms-lines{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 22px,rgba(112,66,20,.07) 22px,rgba(112,66,20,.07) 23px);
+  pointer-events:none;
+}
+.blurline{
+  position:absolute;
+  left:16px;
+  height:7px;
+  border-radius:4px;
+  background:rgba(44,24,16,.18);
+  filter:blur(1.5px);
+}
+.hidden-word{
+  position:absolute;
+  font-family:'IM Fell English',serif;
+  font-weight:700;
+  font-size:.88rem;
+  color:var(--ink);
+  filter:blur(2.5px);
+  transition:filter .35s,color .35s,text-shadow .35s,transform .35s;
+  pointer-events:none;
+  user-select:none;
+}
+.hidden-word.revealed{
+  filter:blur(0);
+  color:var(--gold);
+  text-shadow:0 0 12px var(--gold-light),0 0 24px var(--gold);
+  transform:scale(1.08);
+}
+#magnifier{
+  position:absolute;
+  width:70px;height:70px;
+  border-radius:50%;
+  border:3px solid var(--gold);
+  box-shadow:0 0 0 2px var(--copper),0 4px 16px rgba(0,0,0,.4);
+  background:radial-gradient(circle,rgba(245,230,200,.55) 60%,transparent 100%);
+  backdrop-filter:brightness(1.35) contrast(1.25);
+  pointer-events:none;
+  left:-200px;top:-200px;
+  transition:left .02s,top .02s;
+}
+#magnifier::after{
+  content:'';
+  position:absolute;
+  width:3px;height:28px;
+  background:linear-gradient(180deg,var(--gold),var(--copper));
+  bottom:-26px;
+  left:50%;
+  transform:translateX(-50%) rotate(42deg);
+  transform-origin:top center;
+  border-radius:2px;
+}
+.word-status{
+  display:flex;
+  gap:20px;
+  justify-content:center;
+  margin-top:8px;
+}
+.word-badge{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:.75rem;
+  color:var(--sepia);
+  opacity:.45;
+  transition:opacity .4s,color .4s;
+}
+.word-badge.found{opacity:1;color:var(--green);font-weight:700}
+.word-badge .dot{
+  width:12px;height:12px;
+  border-radius:50%;
+  background:var(--parchment-shadow);
+  transition:background .4s;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;
+  color:white;
+}
+.word-badge.found .dot{background:var(--green)}
+
+/* ════════════════════════════
+   RETO 2 – BALANZA
+════════════════════════════ */
+.scale-container{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+.scale-wrapper{
+  position:relative;
+  width:100%;
+  height:155px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.scale-pole{
+  width:5px;height:52px;
+  background:linear-gradient(180deg,var(--gold),var(--copper));
+  border-radius:3px;
+  margin-top:8px;
+}
+.scale-pivot{
+  width:13px;height:13px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,var(--gold-light),var(--copper));
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  margin-top:-6px;
+}
+.scale-arm{
+  width:210px;height:6px;
+  background:linear-gradient(90deg,var(--copper),var(--gold),var(--copper));
+  border-radius:3px;
+  margin-top:-2px;
+  position:relative;
+  transform-origin:center center;
+  transition:transform .5s cubic-bezier(.175,.885,.32,1.275);
+}
+.arm-string{
+  position:absolute;
+  top:6px;width:1px;height:30px;
+  background:var(--copper);
+}
+.arm-string.left{left:10px}
+.arm-string.right{right:10px}
+
+.plates-row{
+  position:absolute;
+  bottom:0;
+  left:0;right:0;
+  display:flex;
+  justify-content:space-between;
+  padding:0 8px;
+  transition:all .5s;
+}
+.plate{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  transition:transform .5s cubic-bezier(.175,.885,.32,1.275);
+}
+.plate-dish{
+  width:80px;height:30px;
+  border-radius:0 0 50% 50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 8px rgba(0,0,0,.35);
+  flex-wrap:wrap;
+  gap:2px;
+  padding:4px;
+  overflow:hidden;
+  transition:background .5s,border .3s;
+}
+.plate-label{
+  font-size:.6rem;
+  font-style:italic;
+  margin-top:2px;
+  transition:color .5s;
+}
+.plate-left .plate-dish{
+  background:linear-gradient(180deg,var(--gold),var(--copper));
+}
+.plate-right .plate-dish{
+  background:linear-gradient(180deg,var(--parchment-dark),var(--parchment-shadow));
+  border:2px dashed var(--copper);
+  min-height:30px;
+}
+.plate-right.balanced .plate-dish{
+  background:linear-gradient(180deg,var(--green-light),var(--green));
+  border-color:var(--green);
+}
+.plate-right.balanced .plate-label{color:var(--green);font-weight:700}
+
+.item-token{
+  font-size:1rem;
+  cursor:grab;
+  transition:transform .2s;
+  user-select:none;
+}
+.item-token:hover{transform:scale(1.2)}
+.item-token:active{cursor:grabbing}
+
+.warehouse{
+  width:100%;
+  border:1px dashed var(--copper);
+  border-radius:6px;
+  padding:8px;
+  min-height:48px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:center;
+  background:rgba(107,58,42,.12);
+}
+.warehouse-label{
+  width:100%;
+  text-align:center;
+  font-size:.65rem;
+  font-style:italic;
+  color:var(--sepia);
+  margin-bottom:2px;
+}
+.token-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:4px 6px;
+  border-radius:5px;
+  background:linear-gradient(135deg,var(--parchment),var(--parchment-dark));
+  border:1px solid var(--copper);
+  box-shadow:0 2px 4px rgba(0,0,0,.2);
+  cursor:grab;
+  transition:transform .15s,box-shadow .15s;
+  user-select:none;
+  font-size:.6rem;
+  color:var(--sepia);
+}
+.token-card:hover{transform:scale(1.12);box-shadow:0 4px 10px rgba(0,0,0,.3)}
+.token-card.dragging{opacity:.4}
+
+/* ════════════════════════════
+   RETO 3 – ASTROLABIO
+════════════════════════════ */
+.astro-wrapper{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+}
+.astro-outer{
+  position:relative;
+  width:170px;height:170px;
+  border-radius:50%;
+  background:conic-gradient(from 0deg,var(--copper),var(--gold),var(--gold-light),var(--gold),var(--copper));
+  box-shadow:0 0 22px rgba(201,151,58,.4),inset 0 0 12px rgba(0,0,0,.3);
+  flex-shrink:0;
+}
+.astro-tick{
+  position:absolute;
+  left:50%;top:50%;
+  width:2px;
+  background:var(--ink);
+  transform-origin:bottom center;
+  opacity:.6;
+  border-radius:1px;
+}
+.astro-tick.target{background:var(--wax-light);opacity:1;width:3px}
+.astro-disk{
+  position:absolute;
+  inset:14px;
+  border-radius:50%;
+  background:radial-gradient(circle at 40% 40%,var(--parchment) 0%,var(--parchment-dark) 60%,var(--parchment-shadow) 100%);
+  border:2px solid var(--copper);
+  box-shadow:inset 0 0 8px rgba(0,0,0,.2);
+  cursor:grab;
+  overflow:hidden;
+  transition:box-shadow .4s;
+}
+.astro-disk:active{cursor:grabbing}
+.astro-disk.aligned{box-shadow:inset 0 0 8px rgba(0,0,0,.2),0 0 20px rgba(232,184,75,.5)}
+.astro-arm{
+  position:absolute;
+  width:3px;
+  height:36%;
+  background:linear-gradient(180deg,var(--wax-light),var(--wax));
+  border-radius:2px;
+  top:10%;
+  left:50%;
+  transform:translateX(-50%);
+  box-shadow:0 0 6px rgba(192,57,43,.6);
+  transform-origin:bottom center;
+}
+.astro-jewel{
+  position:absolute;
+  width:13px;height:13px;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--copper),var(--leather-dark));
+  border:2px solid var(--gold);
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  transition:background .4s,box-shadow .4s;
+}
+.astro-jewel.glow{
+  background:radial-gradient(circle,var(--gold-light),var(--gold));
+  box-shadow:0 0 12px var(--gold-light);
+}
+.astro-angle{
+  font-family:'Cinzel',serif;
+  font-size:.85rem;
+  font-weight:700;
+  color:var(--gold);
+  transition:color .4s;
+  min-height:22px;
+  text-align:center;
+}
+.astro-angle.aligned{color:var(--green);text-shadow:0 0 8px rgba(45,106,79,.5)}
+#astro-slider{
+  width:100%;
+  accent-color:var(--gold);
+  height:6px;
+}
+.key-reveal{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 14px;
+  border-radius:6px;
+  background:linear-gradient(135deg,var(--gold-pale),var(--gold-light));
+  border:1px solid var(--gold);
+  box-shadow:0 0 12px rgba(232,184,75,.5);
+  font-size:.75rem;
+  font-weight:700;
+  color:var(--ink);
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity .4s,transform .4s;
+}
+.key-reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ════════════════════════════
+   EXIT / VICTORY
+════════════════════════════ */
+#exit-panel{
+  width:100%;
+  border-radius:10px;
+  padding:18px;
+  background:linear-gradient(135deg,rgba(232,184,75,.12),rgba(201,151,58,.08));
+  border:2px solid var(--gold-light);
+  box-shadow:0 0 30px rgba(232,184,75,.3);
+  text-align:center;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  animation:fadeUp .7s ease both;
+  position:relative;z-index:1;
+}
+#exit-panel.visible{display:flex}
+#exit-panel h2{
+  font-family:'Cinzel',serif;
+  color:var(--gold-light);
+  font-size:1rem;
+  letter-spacing:.12em;
+  display:flex;align-items:center;gap:8px;
+}
+#exit-panel p{color:var(--parchment);font-size:.78rem;font-style:italic;line-height:1.6;max-width:320px}
+.exit-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 20px;border-radius:6px;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold));
+  color:var(--ink);
+  font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;
+  letter-spacing:.08em;
+  border:none;cursor:pointer;
+  box-shadow:0 4px 16px rgba(232,184,75,.5);
+  transition:transform .2s,box-shadow .2s;
+}
+.exit-btn:hover{transform:scale(1.04);box-shadow:0 6px 20px rgba(232,184,75,.6)}
+
+/* ── VICTORY OVERLAY ── */
+#victory{
+  position:fixed;inset:0;z-index:100;
+  background:radial-gradient(ellipse at center,rgba(20,10,5,.97) 0%,rgba(10,5,2,.99) 100%);
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:40px 24px;
+  gap:16px;
+}
+#victory.visible{display:flex}
+#victory .anchor{font-size:3.5rem;animation:sway 3s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(0) scale(1)}40%{transform:rotate(6deg) scale(1.05)}70%{transform:rotate(-5deg) scale(1.04)}}
+#victory h2{
+  font-family:'Cinzel',serif;
+  color:var(--gold-light);
+  font-size:1.5rem;
+  letter-spacing:.15em;
+  text-shadow:0 0 24px rgba(232,184,75,.6);
+}
+#victory p{
+  color:var(--parchment);
+  font-style:italic;
+  font-size:.85rem;
+  line-height:1.7;
+  max-width:320px;
+}
+.victory-icons{display:flex;gap:16px;font-size:1.6rem}
+.victory-icons span{animation:bob 1.6s ease-in-out infinite}
+.victory-icons span:nth-child(2){animation-delay:.3s}
+.victory-icons span:nth-child(3){animation-delay:.6s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.replay-btn{
+  padding:8px 22px;border-radius:6px;
+  background:linear-gradient(135deg,var(--leather),var(--leather-dark));
+  color:var(--gold-pale);
+  font-family:'IM Fell English',serif;font-size:.85rem;
+  border:1px solid var(--gold);cursor:pointer;
+  transition:transform .2s;
+}
+.replay-btn:hover{transform:scale(1.05)}
+
+/* ── MODAL ── */
+#modal-overlay{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(20,10,5,.75);
+  backdrop-filter:blur(3px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+#modal-overlay.visible{display:flex}
+#modal-box{
+  width:100%;max-width:440px;
+  border-radius:12px;
+  overflow:hidden;
+  background:linear-gradient(160deg,var(--parchment) 0%,var(--parchment-dark) 100%);
+  border:3px solid var(--copper);
+  box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 0 40px rgba(112,66,20,.1);
+  animation:fadeUp .35s ease;
+}
+.modal-head{
+  padding:14px 20px;
+  background:linear-gradient(90deg,var(--leather-dark),var(--leather));
+  border-bottom:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-head span{
+  font-family:'Cinzel',serif;
+  font-size:1rem;font-weight:700;
+  color:var(--gold-light);
+  display:flex;align-items:center;gap:8px;
+}
+.modal-close{
+  background:none;border:none;cursor:pointer;
+  color:var(--gold-pale);font-size:1.2rem;
+  line-height:1;transition:transform .2s;
+}
+.modal-close:hover{transform:scale(1.2)}
+.modal-body{padding:20px 20px 10px}
+.modal-entry{
+  display:flex;gap:12px;
+  margin-bottom:16px;
+}
+.modal-entry .icon{font-size:1.7rem;line-height:1;flex-shrink:0}
+.modal-entry h3{font-size:.88rem;font-weight:700;color:var(--leather-dark);margin-bottom:4px}
+.modal-entry p{font-size:.75rem;color:var(--ink-light);line-height:1.5}
+.modal-footer{
+  padding:10px 20px 14px;
+  border-top:1px solid var(--parchment-shadow);
+  text-align:center;
+  font-style:italic;font-size:.68rem;
+  color:var(--sepia);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;
+  font-style:italic;font-size:.62rem;
+  color:rgba(197,168,119,.35);
+  margin-top:4px;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <h1>ESCRITORIO DE DERROTA</h1>
+    <p>Camarote del Capitán · Navío «La Resolución» · 1742</p>
+    <div class="progress-orbs">
+      <div class="orb" id="orb1"></div>
+      <div class="orb" id="orb2"></div>
+      <div class="orb" id="orb3"></div>
+      <span class="progress-count" id="prog-count">0/3</span>
+    </div>
+  </div>
+
+  <!-- ── DESK ── -->
+  <div id="desk">
+
+    <!-- Manual button -->
+    <button class="manual-btn" onclick="openManual()">Manual del Capitán</button>
+
+    <!-- ═══ RETO 1 ═══ -->
+    <div class="reto-card" id="card1">
+      <div class="wax-seal">✔</div>
+      <div class="card-header">
+        <div class="card-num">1</div>
+        <span class="card-title">Manuscrito Cifrado</span>
+      </div>
+      <p class="hint">Pasa la lupa con precisión sobre el manuscrito. Hay cuatro topónimos del Imperio ocultos entre las líneas borrosas; localízalos todos.</p>
+      <div id="manuscript">
+        <div class="ms-lines"></div>
+        <!-- blurry lines injected by JS -->
+        <span class="hidden-word" id="word-potosi"   style="left:18%;top:18%">Potosí</span>
+        <span class="hidden-word" id="word-veracruz" style="left:62%;top:42%">Veracruz</span>
+        <span class="hidden-word" id="word-manila"   style="left:30%;top:66%">Manila</span>
+        <span class="hidden-word" id="word-cadiz"    style="left:74%;top:80%">Cádiz</span>
+        <div id="magnifier"></div>
+      </div>
+      <div class="word-status">
+        <div class="word-badge" id="badge-potosi"><div class="dot" id="dot-potosi"></div> Potosí</div>
+        <div class="word-badge" id="badge-veracruz"><div class="dot" id="dot-veracruz"></div> Veracruz</div>
+        <div class="word-badge" id="badge-manila"><div class="dot" id="dot-manila"></div> Manila</div>
+        <div class="word-badge" id="badge-cadiz"><div class="dot" id="dot-cadiz"></div> Cádiz</div>
+      </div>
+    </div>
+
+    <!-- ═══ RETO 2 ═══ -->
+    <div class="reto-card" id="card2">
+      <div class="wax-seal">✔</div>
+      <div class="card-header">
+        <div class="card-num">2</div>
+        <span class="card-title">Balanza de Oro</span>
+      </div>
+      <p class="hint">Arrastra mercancías al plato derecho hasta alcanzar EXACTAMENTE 17 quintales. No todas las piezas son necesarias: piensa qué combinación encaja.</p>
+      <div class="scale-container">
+        <div class="scale-wrapper">
+          <div class="scale-pole"></div>
+          <div class="scale-pivot"></div>
+          <div class="scale-arm" id="scale-arm">
+            <div class="arm-string left"></div>
+            <div class="arm-string right"></div>
+          </div>
+          <div class="plates-row" id="plates-row">
+            <div class="plate plate-left" id="plate-left">
+              <div class="plate-dish"><span style="font-size:.65rem;color:var(--ink);font-weight:700">17</span></div>
+              <span class="plate-label" style="color:var(--sepia)">Oro fijo</span>
+            </div>
+            <div class="plate plate-right" id="plate-right">
+              <div class="plate-dish" id="right-dish"></div>
+              <span class="plate-label" id="right-label">Peso: 0/17</span>
+            </div>
+          </div>
+        </div>
+        <div class="warehouse" id="warehouse"
+          ondragover="event.preventDefault()"
+          ondrop="dropToWarehouse(event)">
+          <div class="warehouse-label">Bodega de carga — arrastra al plato</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RETO 3 ═══ -->
+    <div class="reto-card" id="card3">
+      <div class="wax-seal">✔</div>
+      <div class="card-header">
+        <div class="card-num">3</div>
+        <span class="card-title">Astrolabio del Piloto</span>
+      </div>
+      <p class="hint">Gira el astrolabio hasta alinear EXACTAMENTE los 40° Norte (margen de medio grado). Necesitarás pulso de piloto experimentado.</p>
+      <div class="astro-wrapper">
+        <div class="astro-outer" id="astro-outer">
+          <!-- ticks injected by JS -->
+          <div class="astro-disk" id="astro-disk">
+            <div class="astro-arm"></div>
+            <div class="astro-jewel" id="astro-jewel"></div>
+          </div>
+        </div>
+        <div class="astro-angle" id="astro-angle">0°</div>
+        <input type="range" id="astro-slider" min="0" max="359" value="0">
+        <div class="key-reveal" id="key-reveal">¡Ruta de las Flotas revelada!</div>
+      </div>
+    </div>
+
+    <!-- ═══ EXIT PANEL ═══ -->
+    <div id="exit-panel">
+      <h2>SALIDA DESBLOQUEADA</h2>
+      <p>Has descifrado los secretos del comercio colonial. La ruta hacia Cádiz está abierta.</p>
+      <button class="exit-btn" onclick="showVictory()">Abandonar el Navío →</button>
+    </div>
+
+  </div><!-- /desk -->
+
+  <footer>Escape Room Educativo · Historia del Siglo XVIII</footer>
+</div><!-- /app -->
+
+<!-- ── VICTORY OVERLAY ── -->
+<div id="victory">
+  <div class="anchor">⚓</div>
+  <h2>¡MISIÓN CUMPLIDA!</h2>
+  <p>Has dominado las rutas comerciales del Imperio Español.<br>
+     Potosí, Veracruz, Manila y Cádiz... los nombres que forjaron el mundo moderno viven en tu memoria.</p>
+  <div class="victory-icons"></div>
+  <button class="replay-btn" onclick="resetGame()">↩ Volver a Jugar</button>
+</div>
+
+<!-- ── MODAL ── -->
+<div id="modal-overlay" onclick="closeManual(event)">
+  <div id="modal-box">
+    <div class="modal-head">
+      <span>📖 Manual del Capitán</span>
+      <button class="modal-close" onclick="closeManual()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-entry">
+        <div class="icon">🔍</div>
+        <div>
+          <h3>El Manuscrito de Potosí</h3>
+          <p>Las minas de plata de Potosí (actual Bolivia) y el puerto de Veracruz fueron los pilares del comercio colonial español. Millones de pesos de plata cruzaron el Atlántico financiando la Corona durante dos siglos.</p>
+        </div>
+      </div>
+      <div class="modal-entry">
+        <div class="icon">⚖️</div>
+        <div>
+          <h3>La Balanza de Trueque</h3>
+          <p>La plata americana se intercambiaba por mercancías asiáticas vía Manila y por cacao mesoamericano. El peso exacto determinaba contratos en las ferias de Portobelo y Jalapa, verdaderos mercados del mundo atlántico.</p>
+        </div>
+      </div>
+      <div class="modal-entry">
+        <div class="icon">🧭</div>
+        <div>
+          <h3>El Astrolabio del Piloto</h3>
+          <p>Los pilotos de la Carrera de Indias calculaban la latitud de 40° Norte para aprovechar los vientos del oeste y regresar a España. Esta "vuelta por el norte" definió las grandes rutas navieras del siglo XVIII.</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">"El que controla las rutas, controla el mundo." — Anónimo, s. XVIII</div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+const state = { r1:false, r2:false, r3:false };
+
+function markDone(reto){
+  if(state[reto]) return;
+  state[reto] = true;
+  const n = reto[1];
+  document.getElementById('card'+n).classList.add('done');
+  document.getElementById('orb'+n).classList.add('done');
+  const done = Object.values(state).filter(Boolean).length;
+  document.getElementById('prog-count').textContent = done+'/3';
+  if(state.r1 && state.r2 && state.r3){
+    setTimeout(()=>{ document.getElementById('exit-panel').classList.add('visible'); },400);
+  }
+}
+
+/* ─────────────────────────────────────────
+   RETO 1 — LUPA OCR (4 topónimos, lupa estrecha)
+───────────────────────────────────────── */
+(function(){
+  const ms = document.getElementById('manuscript');
+  const mag = document.getElementById('magnifier');
+  const foundWords = {potosi:false, veracruz:false, manila:false, cadiz:false};
+
+  // More dense blurry text lines (harder to scan visually)
+  const lineDefs = [
+    {top:'6%',w:'78%'},{top:'14%',w:'58%'},{top:'22%',w:'85%'},
+    {top:'30%',w:'66%'},{top:'38%',w:'90%'},{top:'46%',w:'52%'},
+    {top:'54%',w:'80%'},{top:'62%',w:'70%'},{top:'70%',w:'88%'},
+    {top:'78%',w:'60%'},{top:'86%',w:'75%'}
+  ];
+  lineDefs.forEach(d=>{
+    const el=document.createElement('div');
+    el.className='blurline';
+    el.style.top=d.top; el.style.width=d.w;
+    ms.insertBefore(el,ms.firstChild);
+  });
+
+  const words = [
+    {id:'potosi',  el:document.getElementById('word-potosi'),  px:18, py:18},
+    {id:'veracruz',el:document.getElementById('word-veracruz'),px:62, py:42},
+    {id:'manila',  el:document.getElementById('word-manila'),  px:30, py:66},
+    {id:'cadiz',   el:document.getElementById('word-cadiz'),   px:74, py:80},
+  ];
+
+  ms.addEventListener('mousemove',e=>{
+    const r=ms.getBoundingClientRect();
+    const x=e.clientX-r.left, y=e.clientY-r.top;
+    mag.style.left=(x-35)+'px';
+    mag.style.top=(y-35)+'px';
+    const px=(x/r.width)*100, py=(y/r.height)*100;
+    words.forEach(w=>{
+      if(foundWords[w.id]) return;
+      const dist=Math.sqrt((px-w.px)**2+(py-w.py)**2);
+      // Stricter radius (was 9): need precision
+      if(dist<4.5){
+        foundWords[w.id]=true;
+        w.el.classList.add('revealed');
+        document.getElementById('badge-'+w.id).classList.add('found');
+        document.getElementById('dot-'+w.id).textContent='✓';
+        if(Object.values(foundWords).every(Boolean)) markDone('r1');
+      }
+    });
+  });
+  ms.addEventListener('mouseleave',()=>{
+    mag.style.left='-200px'; mag.style.top='-200px';
+  });
+})();
+
+/* ─────────────────────────────────────────
+   RETO 2 — BALANZA
+───────────────────────────────────────── */
+(function(){
+  // Many pieces, multiple plausible combos — only some suman exactamente 17
+  const ITEMS=[
+    {id:'s1',label:'Plata',weight:5,emoji:'🪙'},
+    {id:'s2',label:'Plata',weight:5,emoji:'🪙'},
+    {id:'s3',label:'Plata',weight:3,emoji:'🪙'},
+    {id:'c1',label:'Cacao',weight:3,emoji:'🍫'},
+    {id:'c2',label:'Cacao',weight:3,emoji:'🍫'},
+    {id:'c3',label:'Cacao',weight:2,emoji:'🍫'},
+    {id:'e1',label:'Especia',weight:2,emoji:'🌶'},
+    {id:'e2',label:'Especia',weight:2,emoji:'🌶'},
+    {id:'e3',label:'Especia',weight:1,emoji:'🌶'},
+  ];
+  const TARGET=17;
+  let rightItems=[];
+  let available=[...ITEMS];
+  let dragging=null;
+
+  const arm=document.getElementById('scale-arm');
+  const rightDish=document.getElementById('right-dish');
+  const rightLabel=document.getElementById('right-label');
+  const rightPlate=document.getElementById('plate-right');
+  const warehouse=document.getElementById('warehouse');
+
+  function createToken(item,from){
+    const el=document.createElement('div');
+    el.className='token-card';
+    el.draggable=true;
+    el.dataset.id=item.id;
+    el.dataset.from=from;
+    el.innerHTML=`<span style="font-size:1.2rem">${item.emoji}</span><span>${item.weight}</span>`;
+    el.addEventListener('dragstart',e=>{
+      dragging={item,from};
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+    return el;
+  }
+
+  function render(){
+    // warehouse
+    const wLabel=warehouse.querySelector('.warehouse-label');
+    warehouse.innerHTML='';
+    warehouse.appendChild(wLabel);
+    available.forEach(it=>warehouse.appendChild(createToken(it,'available')));
+
+    // right dish
+    rightDish.innerHTML='';
+    rightItems.forEach(it=>{
+      const sp=document.createElement('span');
+      sp.className='item-token';
+      sp.textContent=it.emoji;
+      sp.draggable=true;
+      sp.dataset.id=it.id;
+      sp.addEventListener('dragstart',e=>{
+        dragging={item:it,from:'right'};
+        e.dataTransfer.effectAllowed='move';
+      });
+      rightDish.appendChild(sp);
+    });
+
+    // balance
+    const rw=rightItems.reduce((s,i)=>s+i.weight,0);
+    const tilt=Math.max(-28,Math.min(28,(rw-TARGET)*4));
+    arm.style.transform=`rotate(${tilt}deg)`;
+
+    // plate vertical offset
+    const leftPlateEl=document.getElementById('plate-left');
+    if(tilt>0){
+      leftPlateEl.style.transform=`translateY(${-tilt*.6}px)`;
+      rightPlate.style.transform=`translateY(${tilt*.6}px)`;
+    } else {
+      leftPlateEl.style.transform=`translateY(${Math.abs(tilt)*.6}px)`;
+      rightPlate.style.transform=`translateY(${-Math.abs(tilt)*.6}px)`;
+    }
+
+    const balanced=(rw===TARGET);
+    rightLabel.textContent=balanced?'¡Equilibrio!':`Peso: ${rw}/17`;
+    rightPlate.classList.toggle('balanced',balanced);
+    if(balanced) markDone('r2');
+  }
+
+  // Drop onto right dish
+  rightDish.parentElement.addEventListener('dragover',e=>e.preventDefault());
+  rightDish.parentElement.addEventListener('drop',e=>{
+    e.preventDefault();
+    if(!dragging) return;
+    if(dragging.from==='available'){
+      available=available.filter(i=>i.id!==dragging.item.id);
+      rightItems=[...rightItems,dragging.item];
+    }
+    dragging=null; render();
+  });
+
+  // Drop back to warehouse
+  warehouse.addEventListener('dragover',e=>e.preventDefault());
+  warehouse.addEventListener('drop',e=>{
+    e.preventDefault();
+    if(!dragging) return;
+    if(dragging.from==='right'){
+      rightItems=rightItems.filter(i=>i.id!==dragging.item.id);
+      available=[...available,dragging.item];
+    }
+    dragging=null; render();
+  });
+
+  render();
+})();
+
+/* ─────────────────────────────────────────
+   RETO 3 — ASTROLABIO
+───────────────────────────────────────── */
+(function(){
+  const outer=document.getElementById('astro-outer');
+  const disk=document.getElementById('astro-disk');
+  const jewel=document.getElementById('astro-jewel');
+  const angleEl=document.getElementById('astro-angle');
+  const slider=document.getElementById('astro-slider');
+  const keyReveal=document.getElementById('key-reveal');
+  const TARGET=40;
+  let angle=0, dragging=false;
+
+  // Build ticks
+  for(let d=0;d<360;d+=10){
+    const tick=document.createElement('div');
+    tick.className='astro-tick'+(d===TARGET?' target':'');
+    const h=(d%90===0)?14:8;
+    const r=85; // px from center (outer radius ~85)
+    const rad=(d-90)*Math.PI/180;
+    const cx=85,cy=85;
+    const x1=cx+r*Math.cos(rad);
+    const y1=cy+r*Math.sin(rad);
+    tick.style.cssText=`width:${d===TARGET?3:2}px;height:${h}px;left:${x1}px;top:${y1}px;transform:rotate(${d}deg);transform-origin:bottom center;`;
+    outer.insertBefore(tick,disk);
+  }
+
+  function setAngle(a){
+    angle=((a%360)+360)%360;
+    disk.style.transform=`rotate(${angle}deg)`;
+    const aligned=Math.abs(angle-TARGET)<0.6;
+    angleEl.textContent=`${Math.round(angle)}°${aligned?' ✓ ¡40° Norte!':''}`;
+    angleEl.classList.toggle('aligned',aligned);
+    jewel.classList.toggle('glow',aligned);
+    disk.classList.toggle('aligned',aligned);
+    keyReveal.classList.toggle('visible',aligned);
+    slider.value=Math.round(angle);
+    if(aligned) markDone('r3');
+  }
+
+  function getAngle(e){
+    const r=outer.getBoundingClientRect();
+    const cx=r.left+r.width/2, cy=r.top+r.height/2;
+    const dx=e.clientX-cx, dy=e.clientY-cy;
+    return ((Math.atan2(dy,dx)*180/Math.PI)+90+360)%360;
+  }
+
+  disk.addEventListener('mousedown',e=>{dragging=true;e.preventDefault()});
+  document.addEventListener('mousemove',e=>{if(dragging) setAngle(getAngle(e))});
+  document.addEventListener('mouseup',()=>dragging=false);
+  // Touch
+  disk.addEventListener('touchstart',e=>{dragging=true;e.preventDefault()},{passive:false});
+  document.addEventListener('touchmove',e=>{
+    if(!dragging) return;
+    const t=e.touches[0];
+    setAngle(getAngle(t));
+  },{passive:false});
+  document.addEventListener('touchend',()=>dragging=false);
+
+  slider.addEventListener('input',()=>setAngle(+slider.value));
+})();
+
+/* ─────────────────────────────────────────
+   MODAL
+───────────────────────────────────────── */
+function openManual(){ document.getElementById('modal-overlay').classList.add('visible') }
+function closeManual(e){
+  if(!e || e.target===document.getElementById('modal-overlay') || e.currentTarget?.classList.contains('modal-close'))
+    document.getElementById('modal-overlay').classList.remove('visible');
+}
+
+/* ─────────────────────────────────────────
+   VICTORY / RESET
+───────────────────────────────────────── */
+function showVictory(){ document.getElementById('victory').classList.add('visible') }
+
+function resetGame(){
+  location.reload();
+}
+</script>
+
+
+<!-- LV-SEQ-START -->
+<style>
+  .reto-card.lv-hidden, .card.lv-hidden { display:none !important; }
+  #lv-next-panel {
+    position: relative; margin: 28px auto; max-width: 540px;
+    padding: 28px 32px; text-align: center;
+    background: linear-gradient(135deg,#2a1810,#1a0f08);
+    border: 2px solid #c9962a; border-radius: 8px;
+    box-shadow: 0 0 40px rgba(201,150,42,.45);
+    display: none; animation: lv-fade .6s ease both; z-index: 50;
+  }
+  #lv-next-panel.show { display:block; }
+  #lv-next-panel h3 {
+    font-family: 'Cinzel', 'IM Fell English', serif;
+    color: #f0d78c; font-size: 1.2rem; letter-spacing: .1em; margin: 0 0 12px;
+  }
+  #lv-next-panel p {
+    color: #d4c5a3; font-style: italic; font-size: .9rem;
+    margin: 0 0 20px; line-height: 1.6; font-family: 'IM Fell English','EB Garamond',serif;
+  }
+  #lv-next-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg,#c9962a,#f0d78c,#c9962a);
+    background-size: 200%;
+    border: 2px solid #6b3a2a; border-radius: 6px;
+    color: #2a1810; font-family: 'Cinzel', serif;
+    font-size: .95rem; font-weight: 700; letter-spacing: .12em;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(201,150,42,.55);
+    transition: transform .2s;
+  }
+  #lv-next-btn:hover { transform: scale(1.05); }
+  @keyframes lv-fade { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+<div id="lv-next-panel">
+  <h3>⚓ ¡Pantalla completada!</h3>
+  <p>Has descifrado los secretos del comercio colonial. Ahora te esperan las luces de la Ilustración.</p>
+  <button id="lv-next-btn" type="button">Continuar a la Pantalla 2 →</button>
+</div>
+<script>
+(function(){
+  const NEXT_URL = 'Pantalla2.html';
+  const cards = ['card1','card2','card3'].map(id=>document.getElementById(id)).filter(Boolean);
+  if (cards.length < 2) return;
+  cards.slice(1).forEach(c=>c.classList.add('lv-hidden'));
+  let current = 0;
+  const seen = new Set();
+  function advance(){
+    if (current >= cards.length - 1) {
+      ['exit-panel','victory','victory-modal','modalFinal'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('show','visible'); el.style.display='none'; }
+      });
+      if (!NEXT_URL) return; // last screen: leave original victory flow alone
+      const panel = document.getElementById('lv-next-panel');
+      panel.classList.add('show');
+      panel.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    current++;
+    const next = cards[current];
+    next.classList.remove('lv-hidden');
+    setTimeout(()=>next.scrollIntoView({behavior:'smooth', block:'start'}), 120);
+  }
+  function hook(){
+    const orig = window.markDone;
+    if (typeof orig !== 'function') { setTimeout(hook, 100); return; }
+    window.markDone = function(arg){
+      const r = orig.apply(this, arguments);
+      const k = String(arg);
+      if (!seen.has(k)) { seen.add(k); setTimeout(advance, 1000); }
+      return r;
+    };
+  }
+  hook();
+  const btn = document.getElementById('lv-next-btn');
+  if (NEXT_URL) {
+    btn.addEventListener('click', ()=>{ window.location.href = NEXT_URL; });
+  } else {
+    btn.style.display = 'none';
+  }
+})();
+</script>
+<!-- LV-SEQ-END -->
+
+</body>
+</html>

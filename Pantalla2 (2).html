@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Baúl de la Ilustración — Escape Room S.XVIII</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & TOKENS ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-dark:#1a0e06;
+  --wood-mid:#3d2008;
+  --wood-light:#5c3317;
+  --plank:#6b3d1e;
+  --parchment:#f5e6c8;
+  --parchment-dark:#e8d5a3;
+  --parchment-shadow:#c4a97d;
+  --ink:#2c1810;
+  --ink-light:#4a2c1a;
+  --leather:#7a4428;
+  --leather-dark:#4a2218;
+  --gold:#c9973a;
+  --gold-light:#e8b84b;
+  --gold-pale:#f0d080;
+  --copper:#b5651d;
+  --wax:#8b1a1a;
+  --wax-light:#c0392b;
+  --sepia:#704214;
+  --green:#2d6a4f;
+  --green-light:#52b788;
+  --red:#a63226;
+  --red-light:#e74c3c;
+  --blue:#1a4a6b;
+  --blue-light:#2980b9;
+  --radius:10px;
+}
+body{
+  font-family:'Crimson Text',serif;
+  background:
+    repeating-linear-gradient(90deg,transparent,transparent 28px,rgba(0,0,0,.08) 28px,rgba(0,0,0,.08) 30px),
+    repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(0,0,0,.06) 28px,rgba(0,0,0,.06) 30px),
+    linear-gradient(160deg,var(--wood-mid) 0%,var(--bg-dark) 50%,var(--wood-light) 100%);
+  min-height:100vh;
+  color:var(--ink);
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg-dark)}
+::-webkit-scrollbar-thumb{background:var(--copper);border-radius:3px}
+
+/* ── LAYOUT ── */
+#app{max-width:680px;margin:0 auto;padding:18px 14px 60px;display:flex;flex-direction:column;align-items:center;gap:18px}
+
+/* ── HEADER ── */
+.header{text-align:center;animation:fadeDown .8s ease both}
+.header h1{
+  font-family:'Cinzel',serif;font-size:1.35rem;font-weight:900;letter-spacing:.16em;
+  color:var(--gold-light);text-shadow:0 0 22px rgba(232,184,75,.5);
+  display:flex;align-items:center;justify-content:center;gap:10px
+}
+.header p{font-style:italic;font-size:.72rem;color:var(--parchment-shadow);margin-top:4px}
+
+/* progress bar */
+.prog-wrap{width:100%;max-width:340px;margin-top:10px}
+.prog-bar-bg{
+  height:10px;border-radius:5px;
+  background:rgba(0,0,0,.4);border:1px solid var(--copper);
+  overflow:hidden
+}
+.prog-bar-fill{
+  height:100%;border-radius:5px;
+  background:linear-gradient(90deg,var(--gold),var(--gold-light));
+  box-shadow:0 0 8px rgba(232,184,75,.5);
+  transition:width .6s cubic-bezier(.175,.885,.32,1.275);
+  width:0%
+}
+.prog-label{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:4px;font-size:.7rem;color:var(--parchment-shadow)
+}
+
+/* ── CHEST ── */
+#chest{
+  width:100%;border-radius:14px;padding:18px;
+  display:flex;flex-direction:column;gap:16px;position:relative;
+  background:
+    repeating-linear-gradient(180deg,transparent,transparent 14px,rgba(0,0,0,.06) 14px,rgba(0,0,0,.06) 15px),
+    linear-gradient(160deg,#5c3317 0%,#3d2008 40%,#2a1505 100%);
+  border:3px solid var(--copper);
+  box-shadow:0 20px 60px rgba(0,0,0,.75),inset 0 1px 0 rgba(201,151,58,.3),inset 0 0 40px rgba(0,0,0,.45);
+}
+/* brass corners */
+#chest::before,#chest::after{
+  content:'✦';position:absolute;font-size:.9rem;
+  color:var(--gold);opacity:.7;pointer-events:none
+}
+#chest::before{top:6px;left:10px}
+#chest::after{top:6px;right:10px}
+
+/* ── RETO CARD ── */
+.reto-card{
+  border-radius:var(--radius);padding:16px;position:relative;
+  border:2px solid var(--copper);
+  background:linear-gradient(135deg,var(--parchment),var(--parchment-dark));
+  box-shadow:0 4px 18px rgba(0,0,0,.25),inset 0 0 20px rgba(112,66,20,.09);
+  transition:border-color .5s,box-shadow .5s;
+  animation:fadeUp .6s ease both
+}
+.reto-card.done{border-color:var(--green);box-shadow:0 0 18px rgba(45,106,79,.32),inset 0 0 16px rgba(45,106,79,.05)}
+.reto-card:nth-child(2){animation-delay:.1s}
+.reto-card:nth-child(3){animation-delay:.2s}
+.reto-card:nth-child(4){animation-delay:.3s}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.card-num{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--gold),var(--copper));
+  color:var(--ink);font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center
+}
+.card-title{font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;color:var(--leather-dark);transition:color .5s}
+.reto-card.done .card-title{color:var(--green)}
+.hint{font-style:italic;font-size:.72rem;color:var(--sepia);margin-bottom:10px;text-align:center}
+
+/* wax seal */
+.wax-seal{
+  position:absolute;top:-14px;right:-14px;width:50px;height:50px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,var(--wax-light),var(--wax));
+  border:3px solid var(--gold-light);
+  box-shadow:0 4px 12px rgba(139,26,26,.5),inset 0 1px 3px rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+  opacity:0;transform:scale(0) rotate(-30deg);
+  transition:opacity .4s,transform .4s cubic-bezier(.175,.885,.32,1.275);z-index:10;pointer-events:none
+}
+.reto-card.done .wax-seal{opacity:1;transform:scale(1) rotate(0deg)}
+
+/* ══════════════════════════
+   RETO 1 — ESCÁNER DE CENSURA
+══════════════════════════ */
+.books-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;position:relative;user-select:none}
+.book-wrap{position:relative;border-radius:6px;overflow:hidden;cursor:crosshair;aspect-ratio:3/4;min-height:110px}
+.book-cover{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px;text-align:center;border-radius:6px;border:2px solid rgba(0,0,0,.25);
+  transition:border-color .3s,box-shadow .3s
+}
+.book-cover.clickable{border-color:var(--gold);box-shadow:0 0 14px rgba(232,184,75,.45);animation:pulseBorder 1.2s ease-in-out infinite}
+@keyframes pulseBorder{0%,100%{box-shadow:0 0 10px rgba(232,184,75,.4)}50%{box-shadow:0 0 22px rgba(232,184,75,.75)}}
+.book-cover.validated{border-color:var(--green);box-shadow:0 0 14px rgba(82,183,136,.5);pointer-events:none;animation:none}
+.book-title-fake{font-family:'IM Fell English',serif;font-size:.78rem;font-weight:700;line-height:1.3}
+.book-title-real{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px;text-align:center;font-family:'IM Fell English',serif;font-size:.78rem;font-weight:700;line-height:1.3;
+  clip-path:circle(0px at 50% 50%);transition:clip-path .05s linear;pointer-events:none
+}
+.book-author{font-size:.62rem;font-style:italic;margin-top:4px;opacity:.8}
+.xray-cursor{
+  position:fixed;width:90px;height:90px;border-radius:50%;pointer-events:none;z-index:999;
+  border:3px solid rgba(200,220,255,.7);
+  box-shadow:0 0 0 2px rgba(100,160,255,.4),0 0 20px rgba(100,160,255,.35),inset 0 0 30px rgba(100,160,255,.15);
+  transform:translate(-50%,-50%);opacity:0;transition:opacity .2s
+}
+.xray-label{
+  position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+  font-size:.48rem;color:rgba(200,230,255,.8);letter-spacing:.08em;white-space:nowrap;
+  font-family:'Cinzel',serif
+}
+.book-check{
+  position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;
+  background:var(--green);color:white;font-size:.7rem;display:none;
+  align-items:center;justify-content:center;z-index:5
+}
+.book-cover.validated .book-check{display:flex}
+
+/* ══════════════════════════
+   RETO 2 — CIRCUITO DE LA RAZÓN
+══════════════════════════ */
+.circuit-layout{position:relative;display:flex;gap:0;align-items:stretch}
+.circuit-col{display:flex;flex-direction:column;gap:8px;flex:1}
+.circuit-col.left{padding-right:12px}
+.circuit-col.right{padding-left:12px}
+.circ-node{
+  border-radius:6px;padding:8px 10px;border:2px solid var(--copper);
+  background:linear-gradient(135deg,#f0e0c0,#e8d0a0);cursor:pointer;
+  font-size:.75rem;font-family:'Crimson Text',serif;line-height:1.4;
+  transition:border-color .25s,box-shadow .25s,background .25s;position:relative;
+  display:flex;align-items:center;gap:6px
+}
+.circ-node:hover{border-color:var(--gold);box-shadow:0 0 8px rgba(201,151,58,.35)}
+.circ-node.selected{border-color:var(--blue-light);background:linear-gradient(135deg,#dbeeff,#c0d8f0);box-shadow:0 0 10px rgba(41,128,185,.4)}
+.circ-node.correct{border-color:var(--green);background:linear-gradient(135deg,#d4edda,#b8dfc8);cursor:default;pointer-events:none}
+.circ-node.wrong{border-color:var(--red-light);background:linear-gradient(135deg,#fde8e8,#f5c6c6);animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.node-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--copper);background:var(--parchment-dark);
+  transition:background .25s,border-color .25s
+}
+.circ-node.selected .node-dot{background:var(--blue-light);border-color:var(--blue-light)}
+.circ-node.correct .node-dot{background:var(--green);border-color:var(--green)}
+.circ-node.wrong .node-dot{background:var(--red-light);border-color:var(--red-light)}
+.left .node-dot{margin-left:auto}
+.svg-lines{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.conn-line{stroke-width:2.5;fill:none;stroke-dasharray:5 4;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-20}}
+.conn-line.correct{stroke:var(--green-light);stroke-dasharray:none;animation:none}
+.conn-line.wrong{stroke:var(--red-light);stroke-dasharray:none;animation:none}
+.circ-score{text-align:center;font-size:.72rem;color:var(--sepia);font-style:italic;margin-top:6px}
+
+/* ══════════════════════════
+   RETO 3 — PANFLETO ENCRIPTADO
+══════════════════════════ */
+.panfleto-wrap{display:flex;flex-direction:column;gap:12px}
+.panfleto-text{
+  font-family:'IM Fell English',serif;font-size:.85rem;line-height:2.1;color:var(--ink);
+  background:linear-gradient(135deg,#fdf4e3,#f5e6c8);
+  border:1px solid var(--parchment-shadow);border-radius:6px;padding:14px 16px;
+  box-shadow:inset 0 0 16px rgba(112,66,20,.08)
+}
+.blank{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:90px;height:26px;border-radius:4px;
+  border:2px dashed var(--copper);background:rgba(201,151,58,.08);
+  vertical-align:middle;margin:0 3px;font-size:.78rem;font-style:italic;
+  color:var(--sepia);cursor:pointer;transition:border-color .25s,background .25s,box-shadow .25s;
+  position:relative;font-family:'Crimson Text',serif
+}
+.blank.over{border-color:var(--gold);background:rgba(232,184,75,.15);box-shadow:0 0 8px rgba(232,184,75,.4)}
+.blank.filled-correct{
+  border:2px solid var(--green);background:rgba(82,183,136,.12);
+  color:var(--green);font-weight:600;font-style:normal;cursor:default
+}
+.blank.filled-wrong{
+  border:2px solid var(--red-light);background:rgba(231,76,60,.08);
+  color:var(--red-light);animation:shake .35s ease
+}
+.blank.filled-pending{
+  border:2px solid var(--gold);background:rgba(232,184,75,.1);
+  color:var(--ink);font-style:normal;font-weight:600
+}
+.tags-tray{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+  padding:10px;border-radius:6px;
+  background:rgba(107,58,42,.15);border:1px dashed var(--copper);min-height:44px
+}
+.tag{
+  padding:5px 12px;border-radius:20px;
+  background:linear-gradient(135deg,var(--leather),var(--leather-dark));
+  color:var(--gold-pale);font-size:.78rem;font-family:'IM Fell English',serif;
+  border:1px solid var(--gold);cursor:grab;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .15s,box-shadow .15s,opacity .25s;
+  user-select:none
+}
+.tag:hover{transform:scale(1.07);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.tag:active{cursor:grabbing}
+.tag.dragging{opacity:.35}
+.tag.used{opacity:.3;pointer-events:none;transform:none}
+.pf-validate-btn{
+  align-self:center;padding:7px 20px;border-radius:6px;
+  background:linear-gradient(135deg,var(--leather),var(--leather-dark));
+  color:var(--gold-pale);font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;
+  border:1px solid var(--gold);cursor:pointer;letter-spacing:.07em;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);transition:transform .2s,box-shadow .2s
+}
+.pf-validate-btn:hover{transform:scale(1.04);box-shadow:0 4px 14px rgba(0,0,0,.45)}
+.pf-feedback{text-align:center;font-size:.72rem;min-height:18px;font-style:italic;color:var(--sepia)}
+
+/* ── EXIT PANEL ── */
+#exit-panel{
+  width:100%;border-radius:var(--radius);padding:20px;text-align:center;
+  background:linear-gradient(135deg,rgba(232,184,75,.13),rgba(201,151,58,.08));
+  border:2px solid var(--gold-light);
+  box-shadow:0 0 30px rgba(232,184,75,.3);
+  display:none;flex-direction:column;align-items:center;gap:10px;
+  animation:fadeUp .7s ease both;position:relative;z-index:1
+}
+#exit-panel.visible{display:flex}
+#exit-panel h2{font-family:'Cinzel',serif;color:var(--gold-light);font-size:1rem;letter-spacing:.12em;display:flex;align-items:center;gap:8px}
+#exit-panel p{color:var(--parchment);font-size:.78rem;font-style:italic;line-height:1.6;max-width:340px}
+.exit-btn{
+  padding:8px 22px;border-radius:6px;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold));
+  color:var(--ink);font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;letter-spacing:.08em;
+  border:none;cursor:pointer;box-shadow:0 4px 16px rgba(232,184,75,.5);transition:transform .2s
+}
+.exit-btn:hover{transform:scale(1.04)}
+
+/* ── VICTORY ── */
+#victory{
+  position:fixed;inset:0;z-index:200;
+  background:radial-gradient(ellipse at center,rgba(20,10,5,.97) 0%,rgba(10,5,2,.99) 100%);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px 24px;gap:16px
+}
+#victory.visible{display:flex}
+#victory .glyph{font-size:3.5rem;animation:sway 3s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(0) scale(1)}40%{transform:rotate(5deg) scale(1.05)}70%{transform:rotate(-4deg) scale(1.04)}}
+#victory h2{font-family:'Cinzel',serif;color:var(--gold-light);font-size:1.5rem;letter-spacing:.15em;text-shadow:0 0 24px rgba(232,184,75,.6)}
+#victory p{color:var(--parchment);font-style:italic;font-size:.85rem;line-height:1.7;max-width:340px}
+.v-icons{display:flex;gap:16px;font-size:1.6rem}
+.v-icons span{animation:bob 1.6s ease-in-out infinite}
+.v-icons span:nth-child(2){animation-delay:.3s}
+.v-icons span:nth-child(3){animation-delay:.6s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.replay-btn{
+  padding:8px 22px;border-radius:6px;
+  background:linear-gradient(135deg,var(--leather),var(--leather-dark));
+  color:var(--gold-pale);font-family:'IM Fell English',serif;font-size:.85rem;
+  border:1px solid var(--gold);cursor:pointer;transition:transform .2s
+}
+.replay-btn:hover{transform:scale(1.05)}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+footer{text-align:center;font-style:italic;font-size:.62rem;color:rgba(197,168,119,.35);margin-top:4px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <h1>EL BAÚL DE LA ILUSTRACIÓN</h1>
+    <p>Cámara de los Filósofos · Navío «La Resolución» · 1748</p>
+    <div class="prog-wrap">
+      <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill"></div></div>
+      <div class="prog-label">
+        <span>Retos completados</span>
+        <span id="prog-text">0 / 3</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHEST ── -->
+  <div id="chest">
+
+    <!-- ═══ RETO 1: ESCÁNER DE CENSURA ═══ -->
+    <div class="reto-card" id="card1">
+      <div class="wax-seal">✔</div>
+      <div class="card-head">
+        <div class="card-num">1</div>
+        <span class="card-title">El Escáner de Censura</span>
+      </div>
+      <p class="hint">Pasa el escáner sobre los libros para revelar su verdadero título. Hay seis libros prohibidos: descúbrelos todos y haz clic en cada uno para validarlo.</p>
+      <div class="books-grid" id="books-grid">
+        <!-- Injected by JS -->
+      </div>
+      <div style="text-align:center;font-size:.68rem;color:var(--sepia);font-style:italic;margin-top:8px" id="r1-status">0 de 6 libros revelados</div>
+    </div>
+
+    <!-- ═══ RETO 2: CIRCUITO DE LA RAZÓN ═══ -->
+    <div class="reto-card" id="card2">
+      <div class="wax-seal">✔</div>
+      <div class="card-head">
+        <div class="card-num">2</div>
+        <span class="card-title">El Circuito de la Razón</span>
+      </div>
+      <p class="hint">Conecta cada concepto ilustrado con su definición exacta. Cada error rompe el intento: pulsa primero el concepto y luego su definición.</p>
+      <div class="circuit-layout" id="circuit-layout">
+        <div class="circuit-col left" id="col-left"></div>
+        <svg class="svg-lines" id="svg-lines"></svg>
+        <div class="circuit-col right" id="col-right"></div>
+      </div>
+      <div class="circ-score" id="circ-score">0 de 6 conexiones correctas</div>
+    </div>
+
+    <!-- ═══ RETO 3: PANFLETO ENCRIPTADO ═══ -->
+    <div class="reto-card" id="card3">
+      <div class="wax-seal">✔</div>
+      <div class="card-head">
+        <div class="card-num">3</div>
+        <span class="card-title">El Panfleto Encriptado</span>
+      </div>
+      <p class="hint">Arrastra las palabras correctas a cada hueco del panfleto ilustrado. Hay distractores: solo cinco palabras encajan.</p>
+      <div class="panfleto-wrap">
+        <div class="panfleto-text" id="panfleto-text"></div>
+        <div class="tags-tray" id="tags-tray"></div>
+        <button class="pf-validate-btn" onclick="validatePanfleto()">Verificar Panfleto</button>
+        <div class="pf-feedback" id="pf-feedback"></div>
+      </div>
+    </div>
+
+    <!-- ═══ EXIT PANEL ═══ -->
+    <div id="exit-panel">
+      <h2>ACCESO CONCEDIDO A LA CÁMARA DEL CAPITÁN</h2>
+      <p>Has demostrado ser digno heredero de las Luces. La <em>Razón</em> ha vencido a la oscuridad. Los secretos de la Ilustración son tuyos.</p>
+      <button class="exit-btn" onclick="showVictory()">Acceder a la Cámara del Capitán →</button>
+    </div>
+
+  </div><!-- /chest -->
+
+  <footer>Escape Room Educativo · La Ilustración · LOMLOE 4º ESO</footer>
+</div><!-- /app -->
+
+<!-- ── VICTORY ── -->
+<div id="victory">
+  <div class="glyph">💡</div>
+  <h2>¡LUZ DE LA RAZÓN!</h2>
+  <p>Has descifrado los secretos de la Ilustración.<br>
+     Rousseau, Montesquieu, Voltaire y Locke vivirán en tu memoria como faros del pensamiento moderno.</p>
+  <div class="v-icons"><span>📚</span><span>⚡</span><span>📜</span></div>
+  <button class="replay-btn" onclick="location.reload()">↩ Volver a Jugar</button>
+</div>
+
+<!-- X-Ray cursor overlay -->
+<div class="xray-cursor" id="xray-cursor">
+  <div class="xray-label">ESCÁNER</div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   GLOBAL STATE
+───────────────────────────────────────── */
+const done = {r1:false, r2:false, r3:false};
+function markDone(r){
+  if(done[r]) return;
+  done[r]=true;
+  document.getElementById('card'+r[1]).classList.add('done');
+  const n=Object.values(done).filter(Boolean).length;
+  document.getElementById('prog-fill').style.width=(n/3*100)+'%';
+  document.getElementById('prog-text').textContent=n+' / 3';
+  if(n===3) setTimeout(()=>document.getElementById('exit-panel').classList.add('visible'),500);
+}
+
+/* ─────────────────────────────────────────
+   RETO 1 — ESCÁNER DE CENSURA
+───────────────────────────────────────── */
+const BOOKS=[
+  {fake:'Libro de Cuentas',real:'El Contrato Social',author:'J.J. Rousseau',
+   color:['#7a4a2a','#c9973a'],textColor:'#f5e6c8'},
+  {fake:'Manual de Pesca',real:'El Espíritu de las Leyes',author:'Montesquieu',
+   color:['#3a4a7a','#6a8abf'],textColor:'#e8f0ff'},
+  {fake:'Recetario del Chef',real:'Cartas Filosóficas',author:'Voltaire',
+   color:['#2a6a3a','#52b788'],textColor:'#eafff2'},
+  {fake:'Guía del Viajero',real:'Dos Tratados de Gobierno',author:'John Locke',
+   color:['#6a3a6a','#b07ac0'],textColor:'#fde8ff'},
+  {fake:'Almanaque del Labrador',real:'Enciclopedia',author:'Diderot y D\'Alembert',
+   color:['#5c2a1e','#a04030'],textColor:'#fde0d8'},
+  {fake:'Diario de Navegación',real:'¿Qué es la Ilustración?',author:'I. Kant',
+   color:['#1e3a4a','#3a7090'],textColor:'#e0f0fa'},
+];
+const r1State={validated:0, revealed:[]};
+
+(function buildBooks(){
+  const grid=document.getElementById('books-grid');
+  BOOKS.forEach((b,i)=>{
+    const wrap=document.createElement('div');
+    wrap.className='book-wrap';
+    wrap.dataset.idx=i;
+
+    const cover=document.createElement('div');
+    cover.className='book-cover';
+    cover.id='book-cover-'+i;
+    cover.style.background=`linear-gradient(160deg,${b.color[0]},${b.color[1]})`;
+
+    const fakeEl=document.createElement('div');
+    fakeEl.className='book-title-fake';
+    fakeEl.style.color=b.textColor;
+    fakeEl.textContent=b.fake;
+
+    const check=document.createElement('div');
+    check.className='book-check';
+    check.textContent='✓';
+
+    cover.appendChild(fakeEl);
+    cover.appendChild(check);
+
+    const realEl=document.createElement('div');
+    realEl.className='book-title-real';
+    realEl.id='book-real-'+i;
+    realEl.style.background=`linear-gradient(160deg,${b.color[0]}dd,${b.color[1]}dd)`;
+    realEl.style.color=b.textColor;
+    realEl.innerHTML=`<span style="font-size:.82rem">${b.real}</span><span class="book-author">${b.author}</span>`;
+
+    wrap.appendChild(cover);
+    wrap.appendChild(realEl);
+
+    cover.addEventListener('click',()=>{
+      if(!r1State.revealed.includes(i)) return;
+      if(cover.classList.contains('validated')) return;
+      cover.classList.add('validated');
+      cover.classList.remove('clickable');
+      r1State.validated++;
+      document.getElementById('r1-status').textContent=`${r1State.validated} de 6 libros revelados`;
+      if(r1State.validated===6) markDone('r1');
+    });
+
+    grid.appendChild(wrap);
+  });
+})();
+
+// X-Ray cursor logic
+const xrayCursor=document.getElementById('xray-cursor');
+let xrayActive=false;
+
+document.addEventListener('mousemove',e=>{
+  xrayCursor.style.left=e.clientX+'px';
+  xrayCursor.style.top=e.clientY+'px';
+});
+
+const booksGrid=document.getElementById('books-grid');
+booksGrid.addEventListener('mouseenter',()=>{
+  xrayCursor.style.opacity='1';
+  xrayActive=true;
+});
+booksGrid.addEventListener('mouseleave',()=>{
+  xrayCursor.style.opacity='0';
+  xrayActive=false;
+  // hide all reveals
+  document.querySelectorAll('.book-title-real').forEach(el=>el.style.clipPath='circle(0px at 50% 50%)');
+  document.querySelectorAll('.book-cover').forEach(el=>el.classList.remove('clickable'));
+});
+
+booksGrid.addEventListener('mousemove',e=>{
+  if(!xrayActive) return;
+  const RADIUS=45;
+  document.querySelectorAll('.book-wrap').forEach((wrap,i)=>{
+    const cover=document.getElementById('book-cover-'+i);
+    if(cover.classList.contains('validated')) return;
+    const realEl=document.getElementById('book-real-'+i);
+    const rect=wrap.getBoundingClientRect();
+    const relX=e.clientX-rect.left;
+    const relY=e.clientY-rect.top;
+    const cx=(relX/rect.width)*100;
+    const cy=(relY/rect.height)*100;
+    // check proximity
+    const inside=(relX>-RADIUS && relX<rect.width+RADIUS && relY>-RADIUS && relY<rect.height+RADIUS);
+    if(inside){
+      realEl.style.clipPath=`circle(${RADIUS}px at ${relX}px ${relY}px)`;
+      const isRevealed=(relX>0 && relX<rect.width && relY>0 && relY<rect.height);
+      if(isRevealed && !r1State.revealed.includes(i)){
+        r1State.revealed.push(i);
+        cover.classList.add('clickable');
+        document.getElementById('r1-status').textContent=`${r1State.validated} de 6 libros revelados — ¡haz clic para validar!`;
+      }
+      if(r1State.revealed.includes(i) && !cover.classList.contains('validated'))
+        cover.classList.add('clickable');
+    } else {
+      realEl.style.clipPath='circle(0px at 50% 50%)';
+    }
+  });
+});
+
+/* ─────────────────────────────────────────
+   RETO 2 — CIRCUITO DE LA RAZÓN
+───────────────────────────────────────── */
+const CONCEPTS=[
+  {id:'sob', label:'Soberanía Nacional',    defId:'dS'},
+  {id:'div', label:'División de Poderes',   defId:'dD'},
+  {id:'der', label:'Derechos Naturales',    defId:'dN'},
+  {id:'pro', label:'Progreso Indefinido',   defId:'dP'},
+  {id:'tol', label:'Tolerancia Religiosa',  defId:'dT'},
+  {id:'con', label:'Contrato Social',       defId:'dC'},
+];
+const DEFS=[
+  {id:'dS', text:'El pueblo es la fuente legítima del poder político.'},
+  {id:'dP', text:'La humanidad avanza hacia mayor conocimiento y libertad.'},
+  {id:'dN', text:'Vida, libertad y propiedad son inherentes al ser humano.'},
+  {id:'dD', text:'Ejecutivo, legislativo y judicial deben ser independientes.'},
+  {id:'dT', text:'Ninguna fe debe imponerse por la fuerza al individuo.'},
+  {id:'dC', text:'La sociedad nace de un pacto libre entre ciudadanos iguales.'},
+];
+// shuffle defs
+const shuffledDefs=[...DEFS].sort(()=>Math.random()-.5);
+
+const r2State={selected:null, correct:0, connections:{}};
+
+(function buildCircuit(){
+  const colL=document.getElementById('col-left');
+  const colR=document.getElementById('col-right');
+
+  CONCEPTS.forEach(c=>{
+    const node=document.createElement('div');
+    node.className='circ-node';
+    node.id='cn-'+c.id;
+    node.dataset.id=c.id;
+    node.innerHTML=`<span style="font-size:.75rem;flex:1">${c.label}</span><div class="node-dot left"></div>`;
+    node.addEventListener('click',()=>selectConcept(c.id));
+    colL.appendChild(node);
+  });
+
+  shuffledDefs.forEach(d=>{
+    const node=document.createElement('div');
+    node.className='circ-node';
+    node.id='dn-'+d.id;
+    node.dataset.id=d.id;
+    node.innerHTML=`<div class="node-dot"></div><span style="font-size:.72rem;flex:1">${d.text}</span>`;
+    node.addEventListener('click',()=>selectDef(d.id));
+    colR.appendChild(node);
+  });
+})();
+
+function selectConcept(id){
+  const node=document.getElementById('cn-'+id);
+  if(node.classList.contains('correct')) return;
+  document.querySelectorAll('.circ-node.selected').forEach(n=>{
+    if(n.id.startsWith('cn-')) n.classList.remove('selected');
+  });
+  r2State.selected=id;
+  node.classList.add('selected');
+}
+
+function selectDef(defId){
+  if(!r2State.selected) return;
+  const defNode=document.getElementById('dn-'+defId);
+  if(defNode.classList.contains('correct')) return;
+  const conceptId=r2State.selected;
+  const conceptNode=document.getElementById('cn-'+conceptId);
+  const concept=CONCEPTS.find(c=>c.id===conceptId);
+  const isCorrect=(concept.defId===defId);
+
+  if(isCorrect){
+    conceptNode.classList.remove('selected');
+    conceptNode.classList.add('correct');
+    defNode.classList.add('correct');
+    r2State.correct++;
+    r2State.connections[conceptId]={defId, correct:true};
+    drawLine(conceptId,defId,true);
+  } else {
+    conceptNode.classList.add('wrong');
+    defNode.classList.add('wrong');
+    r2State.connections[conceptId]={defId, correct:false};
+    drawLine(conceptId,defId,false);
+    setTimeout(()=>{
+      conceptNode.classList.remove('wrong','selected');
+      defNode.classList.remove('wrong');
+      delete r2State.connections[conceptId];
+      redrawLines();
+    },800);
+  }
+
+  r2State.selected=null;
+  document.getElementById('circ-score').textContent=`${r2State.correct} de 6 conexiones correctas`;
+  if(r2State.correct===6) markDone('r2');
+}
+
+function getNodeCenter(el){
+  const svg=document.getElementById('svg-lines');
+  const svgRect=svg.getBoundingClientRect();
+  const rect=el.getBoundingClientRect();
+  return{
+    x:rect.left+rect.width/2-svgRect.left,
+    y:rect.top+rect.height/2-svgRect.top
+  };
+}
+function drawLine(conceptId,defId,correct){
+  const svg=document.getElementById('svg-lines');
+  const cEl=document.getElementById('cn-'+conceptId);
+  const dEl=document.getElementById('dn-'+defId);
+  const p1=getNodeCenter(cEl), p2=getNodeCenter(dEl);
+  const line=document.createElementNS('http://www.w3.org/2000/svg','path');
+  const mx=(p1.x+p2.x)/2;
+  line.setAttribute('d',`M${p1.x},${p1.y} C${mx},${p1.y} ${mx},${p2.y} ${p2.x},${p2.y}`);
+  line.setAttribute('class','conn-line '+(correct?'correct':'wrong'));
+  line.setAttribute('stroke',correct?'#52b788':'#e74c3c');
+  line.dataset.cid=conceptId;
+  svg.appendChild(line);
+}
+function redrawLines(){
+  const svg=document.getElementById('svg-lines');
+  Array.from(svg.querySelectorAll('.conn-line')).forEach(l=>{
+    const cid=l.dataset.cid;
+    if(!r2State.connections[cid]) svg.removeChild(l);
+  });
+}
+
+// Redraw on resize
+window.addEventListener('resize',()=>{
+  document.getElementById('svg-lines').innerHTML='';
+  Object.entries(r2State.connections).forEach(([cid,v])=>{
+    if(v.correct) drawLine(cid,v.defId,true);
+  });
+});
+
+/* ─────────────────────────────────────────
+   RETO 3 — PANFLETO ENCRIPTADO
+───────────────────────────────────────── */
+const BLANKS=[
+  {id:'b1', answer:'Razón',     wrongTags:['Fe','Tradición']},
+  {id:'b2', answer:'Igualdad',  wrongTags:['Privilegio','Nobleza']},
+  {id:'b3', answer:'Progreso',  wrongTags:['Statu quo','Obediencia']},
+  {id:'b4', answer:'Tolerancia',wrongTags:['Fanatismo','Dogma']},
+  {id:'b5', answer:'Ciencia',   wrongTags:['Superstición','Milagro']},
+];
+const ALL_TAGS=['Razón','Igualdad','Progreso','Tolerancia','Ciencia',
+                'Fe','Tradición','Privilegio','Nobleza','Statu quo','Obediencia',
+                'Fanatismo','Dogma','Superstición','Milagro'];
+const shuffledTags=[...ALL_TAGS].sort(()=>Math.random()-.5);
+const r3State={filled:{}, validated:false};
+let draggedTag=null;
+
+(function buildPanfleto(){
+  const textEl=document.getElementById('panfleto-text');
+  textEl.innerHTML=`
+    "Los filósofos de las Luces proclamaron que la 
+    <span class="blank" id="b1" data-id="b1">_____</span>
+    era la única guía legítima del ser humano. Frente a la tiranía del Antiguo Régimen,
+    defendieron la 
+    <span class="blank" id="b2" data-id="b2">_____</span>
+    de todos los ciudadanos ante la ley. Reclamaron además la
+    <span class="blank" id="b4" data-id="b4">_____</span>
+    religiosa, para que ningún culto fuese impuesto por la fuerza. Confiaron en la
+    <span class="blank" id="b5" data-id="b5">_____</span>
+    experimental como nuevo método de conocimiento. Su legado más duradero fue la fe en el
+    <span class="blank" id="b3" data-id="b3">_____</span>
+    de la humanidad gracias a la educación pública."
+    <br><br>
+    <em style="font-size:.72rem;color:var(--sepia)">— Extracto del Panfleto Clandestino, París, 1762</em>
+  `;
+
+  // blank drop targets
+  document.querySelectorAll('.blank').forEach(blank=>{
+    blank.addEventListener('dragover',e=>{e.preventDefault();blank.classList.add('over')});
+    blank.addEventListener('dragleave',()=>blank.classList.remove('over'));
+    blank.addEventListener('drop',e=>{
+      e.preventDefault();
+      blank.classList.remove('over');
+      if(!draggedTag || blank.classList.contains('filled-correct')) return;
+      const word=draggedTag.dataset.word;
+      const bid=blank.dataset.id;
+      // remove from previous blank if any
+      Object.keys(r3State.filled).forEach(k=>{
+        if(r3State.filled[k]===word && k!==bid){
+          const prev=document.getElementById(k);
+          prev.textContent='_____';
+          prev.className='blank';
+          delete r3State.filled[k];
+        }
+      });
+      r3State.filled[bid]=word;
+      blank.textContent=word;
+      blank.className='blank filled-pending';
+      r3State.validated=false;
+      document.getElementById('pf-feedback').textContent='';
+    });
+    // click to clear
+    blank.addEventListener('click',()=>{
+      if(blank.classList.contains('filled-correct')) return;
+      const bid=blank.dataset.id;
+      if(r3State.filled[bid]){
+        delete r3State.filled[bid];
+        blank.textContent='_____';
+        blank.className='blank';
+      }
+    });
+  });
+
+  // tags
+  const tray=document.getElementById('tags-tray');
+  shuffledTags.forEach(word=>{
+    const tag=document.createElement('div');
+    tag.className='tag';
+    tag.textContent=word;
+    tag.draggable=true;
+    tag.dataset.word=word;
+    tag.addEventListener('dragstart',e=>{
+      draggedTag=tag;
+      tag.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    tag.addEventListener('dragend',()=>{
+      draggedTag=null;
+      tag.classList.remove('dragging');
+    });
+    tray.appendChild(tag);
+  });
+})();
+
+function validatePanfleto(){
+  const fb=document.getElementById('pf-feedback');
+  let correct=0;
+  BLANKS.forEach(b=>{
+    const blank=document.getElementById(b.id);
+    const answer=r3State.filled[b.id];
+    if(!answer){blank.className='blank';return}
+    if(answer===b.answer){
+      blank.className='blank filled-correct';
+      correct++;
+    } else {
+      blank.className='blank filled-wrong';
+      setTimeout(()=>{
+        delete r3State.filled[b.id];
+        blank.textContent='_____';
+        blank.className='blank';
+      },800);
+    }
+  });
+  if(correct===5){
+    fb.style.color='var(--green)';
+    fb.textContent='✓ ¡Panfleto completamente descifrado!';
+    markDone('r3');
+  } else if(correct>0){
+    fb.style.color='var(--sepia)';
+    fb.textContent=`${correct} de 5 correctas. Revisa las marcadas en rojo.`;
+  } else {
+    fb.style.color='var(--wax-light)';
+    fb.textContent='Ninguna respuesta correcta. Consulta los textos ilustrados.';
+  }
+}
+
+/* ─────────────────────────────────────────
+   VICTORY
+───────────────────────────────────────── */
+function showVictory(){document.getElementById('victory').classList.add('visible')}
+</script>
+
+
+
+<!-- ══════ GUÍA DE PRUEBAS ══════ -->
+
+<style>
+#guia-fab{
+  position:fixed;top:14px;right:14px;z-index:99990;
+  display:flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,#3d1f0d,#6b3a2a);
+  border:1px solid #c9973a;
+  color:#f0d080;font-family:'Cinzel','IM Fell English',Georgia,serif;
+  font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+  box-shadow:0 4px 14px rgba(0,0,0,.55),inset 0 1px 0 rgba(232,184,75,.25);
+  transition:transform .2s,box-shadow .2s;
+}
+#guia-fab:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.6)}
+#guia-overlay{
+  position:fixed;inset:0;z-index:99991;
+  background:rgba(20,10,5,.78);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+#guia-overlay.visible{display:flex;animation:guia-fade .35s ease}
+@keyframes guia-fade{from{opacity:0}to{opacity:1}}
+#guia-box{
+  width:100%;max-width:480px;max-height:88vh;overflow:auto;
+  border-radius:10px;
+  background:linear-gradient(160deg,#f5e6c8 0%,#e8d5a3 100%);
+  border:3px solid #b5651d;
+  box-shadow:0 20px 60px rgba(0,0,0,.7),inset 0 0 40px rgba(112,66,20,.12);
+  font-family:'IM Fell English','Crimson Text',Georgia,serif;color:#2c1810;
+  animation:guia-up .35s ease;
+}
+@keyframes guia-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+#guia-box .guia-head{
+  padding:14px 20px;
+  background:linear-gradient(90deg,#3d1f0d,#6b3a2a);
+  border-bottom:2px solid #c9973a;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;
+}
+#guia-box .guia-head span{
+  font-family:'Cinzel',serif;font-size:1rem;font-weight:700;
+  color:#e8b84b;letter-spacing:.06em;
+}
+#guia-box .guia-close{
+  background:none;border:none;color:#f0d080;font-size:1.3rem;
+  cursor:pointer;line-height:1;transition:transform .2s;
+}
+#guia-box .guia-close:hover{transform:scale(1.25)}
+#guia-box .guia-body{padding:20px 22px 6px}
+#guia-box .guia-entry{display:flex;gap:14px;margin-bottom:18px}
+#guia-box .guia-entry .guia-icon{font-size:1.85rem;line-height:1;flex-shrink:0}
+#guia-box .guia-entry h3{
+  font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;
+  color:#3d1f0d;margin:0 0 6px;letter-spacing:.04em;
+}
+#guia-box .guia-entry p{
+  font-size:.82rem;line-height:1.55;color:#4a2c1a;margin:0;
+  font-family:'Crimson Text','IM Fell English',Georgia,serif;
+}
+#guia-box .guia-foot{
+  padding:10px 20px 16px;border-top:1px solid #c4a97d;
+  text-align:center;font-style:italic;font-size:.72rem;color:#704214;
+}
+</style>
+<button id="guia-fab" type="button" aria-label="Guía de las pruebas">📖 Guía</button>
+<div id="guia-overlay" role="dialog" aria-modal="true"><div id="guia-box"><div class="guia-head"><span>📖 Manual del Ilustrado</span><button class="guia-close" type="button" aria-label="Cerrar">✕</button></div><div class="guia-body"><div class="guia-entry"><div class="guia-icon">🔍</div><div><h3>Escáner de censura</h3><p>Pasa el cursor sobre las portadas falsas de los libros: una lente de rayos X revelará el título prohibido oculto debajo. Cuando lo identifiques, púlsalo para marcarlo como censurado. Debes desenmascarar todos los libros prohibidos.</p></div></div><div class="guia-entry"><div class="guia-icon">🔗</div><div><h3>Circuito de la razón</h3><p>Conecta cada concepto ilustrado de la columna izquierda con su definición correcta de la columna derecha. Toca primero un nodo y después su pareja para trazar la conexión. Si fallas, el circuito se romperá y deberás intentarlo de nuevo.</p></div></div><div class="guia-entry"><div class="guia-icon">📜</div><div><h3>Panfleto encriptado</h3><p>Completa los huecos del panfleto clandestino eligiendo la palabra correcta entre las opciones disponibles. Solo el panfleto íntegro abrirá la cámara secreta.</p></div></div></div><div class="guia-foot">"Sapere aude" — Atrévete a saber. — Kant, 1784</div></div></div>
+
+<script>
+(function(){
+  function open(){document.getElementById('guia-overlay').classList.add('visible')}
+  function close(e){
+    if(!e||e.target.id==='guia-overlay'||e.currentTarget.classList.contains('guia-close'))
+      document.getElementById('guia-overlay').classList.remove('visible')
+  }
+  function ready(){
+    document.getElementById('guia-fab').addEventListener('click',open);
+    document.getElementById('guia-overlay').addEventListener('click',close);
+    document.querySelector('#guia-box .guia-close').addEventListener('click',function(e){
+      e.stopPropagation();
+      document.getElementById('guia-overlay').classList.remove('visible');
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape') document.getElementById('guia-overlay').classList.remove('visible');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready);
+  else ready();
+})();
+</script>
+
+<!-- ══════ FIN GUÍA DE PRUEBAS ══════ -->
+<!-- LV-SEQ-START -->
+<style>
+  .reto-card.lv-hidden, .card.lv-hidden { display:none !important; }
+  #lv-next-panel {
+    position: relative; margin: 28px auto; max-width: 540px;
+    padding: 28px 32px; text-align: center;
+    background: linear-gradient(135deg,#2a1810,#1a0f08);
+    border: 2px solid #c9962a; border-radius: 8px;
+    box-shadow: 0 0 40px rgba(201,150,42,.45);
+    display: none; animation: lv-fade .6s ease both; z-index: 50;
+  }
+  #lv-next-panel.show { display:block; }
+  #lv-next-panel h3 {
+    font-family: 'Cinzel', 'IM Fell English', serif;
+    color: #f0d78c; font-size: 1.2rem; letter-spacing: .1em; margin: 0 0 12px;
+  }
+  #lv-next-panel p {
+    color: #d4c5a3; font-style: italic; font-size: .9rem;
+    margin: 0 0 20px; line-height: 1.6; font-family: 'IM Fell English','EB Garamond',serif;
+  }
+  #lv-next-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg,#c9962a,#f0d78c,#c9962a);
+    background-size: 200%;
+    border: 2px solid #6b3a2a; border-radius: 6px;
+    color: #2a1810; font-family: 'Cinzel', serif;
+    font-size: .95rem; font-weight: 700; letter-spacing: .12em;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(201,150,42,.55);
+    transition: transform .2s;
+  }
+  #lv-next-btn:hover { transform: scale(1.05); }
+  @keyframes lv-fade { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+<div id="lv-next-panel">
+  <h3>⚓ ¡Pantalla completada!</h3>
+  <p>La razón ha vencido a la oscuridad. Ahora el Almirantazgo reclama tu ayuda en plena batalla.</p>
+  <button id="lv-next-btn" type="button">Continuar a la Pantalla 3 →</button>
+</div>
+<script>
+(function(){
+  const NEXT_URL = 'Pantalla3.html';
+  const cards = ['card1','card2','card3'].map(id=>document.getElementById(id)).filter(Boolean);
+  if (cards.length < 2) return;
+  cards.slice(1).forEach(c=>c.classList.add('lv-hidden'));
+  let current = 0;
+  const seen = new Set();
+  function advance(){
+    if (current >= cards.length - 1) {
+      ['exit-panel','victory','victory-modal','modalFinal'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('show','visible'); el.style.display='none'; }
+      });
+      if (!NEXT_URL) return; // last screen: leave original victory flow alone
+      const panel = document.getElementById('lv-next-panel');
+      panel.classList.add('show');
+      panel.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    current++;
+    const next = cards[current];
+    next.classList.remove('lv-hidden');
+    setTimeout(()=>next.scrollIntoView({behavior:'smooth', block:'start'}), 120);
+  }
+  function hook(){
+    const orig = window.markDone;
+    if (typeof orig !== 'function') { setTimeout(hook, 100); return; }
+    window.markDone = function(arg){
+      const r = orig.apply(this, arguments);
+      const k = String(arg);
+      if (!seen.has(k)) { seen.add(k); setTimeout(advance, 1000); }
+      return r;
+    };
+  }
+  hook();
+  const btn = document.getElementById('lv-next-btn');
+  if (NEXT_URL) {
+    btn.addEventListener('click', ()=>{ window.location.href = NEXT_URL; });
+  } else {
+    btn.style.display = 'none';
+  }
+})();
+</script>
+<!-- LV-SEQ-END -->
+
+</body>
+</html>

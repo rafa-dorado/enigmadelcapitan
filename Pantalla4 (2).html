@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantalla 4 – El Laboratorio del Naturalista</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment:    #f2e8d5;
+    --parchment-dk: #e0ceaf;
+    --mahogany:     #5c2a0e;
+    --mahogany-lt:  #8b4513;
+    --moss:         #4a6741;
+    --sage:         #7a9e6e;
+    --sage-lt:      #a8c89a;
+    --brass:        #b8860b;
+    --brass-lt:     #d4a017;
+    --glass:        rgba(180,220,200,0.25);
+    --ink:          #2b1a0a;
+    --ink-lt:       #5a3d20;
+    --gold:         #c9a227;
+    --seal-red:     #8b1a1a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    background: var(--mahogany);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── WOOD BACKGROUND ── */
+  .wood-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      repeating-linear-gradient(
+        88deg,
+        transparent 0px, transparent 38px,
+        rgba(0,0,0,.07) 38px, rgba(0,0,0,.07) 40px
+      ),
+      repeating-linear-gradient(
+        92deg,
+        transparent 0px, transparent 60px,
+        rgba(255,255,255,.04) 60px, rgba(255,255,255,.04) 62px
+      ),
+      linear-gradient(180deg, #6b3310 0%, #4a2008 40%, #3a1a05 100%);
+  }
+  .wood-grain {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 300px 40px at 20% 30%, rgba(255,160,80,.06) 0%, transparent 70%),
+      radial-gradient(ellipse 200px 30px at 70% 60%, rgba(255,130,60,.05) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 60px at 50% 80%, rgba(200,100,40,.07) 0%, transparent 70%);
+  }
+
+  /* ── SHELF DECORATIONS ── */
+  .shelf-row {
+    position: fixed; width: 100%; z-index: 1; pointer-events: none;
+    background: linear-gradient(180deg, #7a4010 0%, #5c2a0e 60%, #3a1505 100%);
+    box-shadow: 0 4px 12px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,200,100,.1);
+  }
+  .shelf-top    { top: 0;    height: 12px; }
+  .shelf-mid    { top: 200px; height: 10px; }
+  .shelf-bottom { bottom: 0; height: 14px; }
+
+  .jar {
+    position: fixed; z-index: 1; pointer-events: none;
+    font-size: 2rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));
+    animation: sway 6s ease-in-out infinite;
+  }
+  @keyframes sway { 0%,100%{transform:rotate(-2deg)} 50%{transform:rotate(2deg)} }
+  .jar:nth-child(2){animation-delay:-2s}.jar:nth-child(3){animation-delay:-4s}
+
+  /* ── MAIN LAYOUT ── */
+  #app {
+    position: relative; z-index: 10;
+    max-width: 980px; margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center; margin-bottom: 32px;
+    background: linear-gradient(135deg, rgba(242,232,213,.97) 0%, rgba(224,206,175,.95) 100%);
+    border: 3px solid var(--brass);
+    border-radius: 4px; padding: 20px 28px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.4);
+    position: relative;
+  }
+  .header::before, .header::after {
+    content: '✦'; position: absolute; top: 12px; font-size: 1.2rem; color: var(--brass);
+  }
+  .header::before { left: 16px; }
+  .header::after  { right: 16px; }
+
+  .header-label {
+    font-family: 'Special Elite', cursive;
+    font-size: .75rem; letter-spacing: .18em;
+    color: var(--mahogany-lt); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .header h1 {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 2rem; color: var(--mahogany);
+    line-height: 1.1; margin-bottom: 6px;
+  }
+  .header p {
+    font-style: italic; color: var(--ink-lt); font-size: .95rem;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-strip {
+    display: flex; gap: 12px; justify-content: center; margin-bottom: 28px;
+  }
+  .prog-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(242,232,213,.9); border: 2px solid var(--parchment-dk);
+    border-radius: 3px; padding: 8px 16px;
+    font-family: 'Special Elite', cursive; font-size: .8rem;
+    color: var(--ink-lt); transition: all .4s;
+  }
+  .prog-badge.done {
+    border-color: var(--moss); background: rgba(74,103,65,.15);
+    color: var(--moss);
+  }
+  .prog-badge .icon { font-size: 1.1rem; }
+
+  /* ── CARD ── */
+  .card {
+    background: linear-gradient(160deg, rgba(242,232,213,.98) 0%, rgba(230,215,188,.97) 100%);
+    border: 2px solid var(--parchment-dk);
+    border-radius: 4px; padding: 28px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.5);
+    margin-bottom: 24px;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent 0px, transparent 28px,
+      rgba(90,61,32,.06) 28px, rgba(90,61,32,.06) 29px
+    );
+  }
+  .card-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--parchment-dk);
+  }
+  .card-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--mahogany); color: var(--brass-lt);
+    font-family: 'IM Fell English'; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  }
+  .card-title { font-family: 'IM Fell English'; font-size: 1.3rem; color: var(--mahogany); }
+  .card-subtitle { font-style: italic; font-size: .85rem; color: var(--ink-lt); margin-top: 2px; }
+
+  .success-overlay {
+    position: absolute; inset: 0; z-index: 20;
+    background: rgba(74,103,65,.92); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    border-radius: 4px; opacity: 0; pointer-events: none;
+    transition: opacity .5s;
+  }
+  .success-overlay.show { opacity: 1; pointer-events: all; }
+  .success-overlay .tick { font-size: 3.5rem; animation: popIn .4s cubic-bezier(.2,1.4,.4,1); }
+  .success-overlay p { color: #fff; font-family: 'IM Fell English'; font-size: 1.2rem; text-align: center; }
+  @keyframes popIn { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+
+  /* ══════════════════════════════════════════
+     RETO 1 – MICROSCOPIO
+  ══════════════════════════════════════════ */
+  .microscope-area {
+    display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;
+  }
+  .scope-left {
+    flex: 1; min-width: 220px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .plant-frame {
+    width: 220px; height: 220px; border-radius: 50%;
+    border: 6px solid var(--mahogany); position: relative; overflow: hidden;
+    box-shadow: 0 0 0 3px var(--brass), 0 8px 24px rgba(0,0,0,.5);
+    background: #1a3020;
+  }
+  .plant-img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: blur(12px) brightness(.7) saturate(.4);
+    transition: filter .05s;
+    background: radial-gradient(ellipse at center,
+      #2a5a30 0%, #1a3520 40%, #0d1e0f 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 7rem; user-select: none;
+  }
+  .plant-img.focused {
+    filter: blur(0px) brightness(1) saturate(1);
+  }
+  .scope-reticle {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center,
+      transparent 60%, rgba(0,0,0,.55) 100%);
+    border-radius: 50%;
+  }
+  .scope-reticle::after {
+    content: ''; position: absolute; inset: 0;
+    border-radius: 50%;
+    background:
+      linear-gradient(to bottom, transparent 49.5%, rgba(200,160,50,.3) 49.5%, rgba(200,160,50,.3) 50.5%, transparent 50.5%),
+      linear-gradient(to right,  transparent 49.5%, rgba(200,160,50,.3) 49.5%, rgba(200,160,50,.3) 50.5%, transparent 50.5%);
+  }
+
+  .focus-label {
+    font-family: 'Special Elite'; font-size: .72rem; letter-spacing: .1em;
+    color: var(--ink-lt); text-align: center;
+  }
+  .focus-slider {
+    width: 200px; -webkit-appearance: none; appearance: none;
+    height: 6px; border-radius: 3px; cursor: pointer;
+    background: linear-gradient(to right, var(--moss) 0%, var(--parchment-dk) 100%);
+    outline: none;
+  }
+  .focus-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--mahogany); border: 2px solid var(--brass);
+    box-shadow: 0 2px 6px rgba(0,0,0,.4); cursor: pointer;
+  }
+
+  .scope-right { flex: 1; min-width: 220px; }
+  .ficha {
+    background: rgba(255,255,255,.4); border: 1px solid var(--parchment-dk);
+    border-radius: 3px; padding: 16px; font-size: .9rem;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .5s, transform .5s;
+  }
+  .ficha.show { opacity: 1; transform: translateY(0); }
+  .ficha h3 { font-family: 'IM Fell English'; font-size: 1.1rem; color: var(--mahogany); margin-bottom: 8px; }
+  .ficha p  { font-size: .85rem; color: var(--ink-lt); margin-bottom: 12px; font-style: italic; }
+  .choices { display: flex; flex-direction: column; gap: 8px; }
+  .choice-btn {
+    padding: 9px 14px; border: 2px solid var(--parchment-dk);
+    border-radius: 3px; background: rgba(255,255,255,.5);
+    font-family: 'Crimson Pro'; font-size: .9rem; cursor: pointer;
+    text-align: left; color: var(--ink); transition: all .2s;
+  }
+  .choice-btn:hover { background: rgba(74,103,65,.15); border-color: var(--moss); }
+  .choice-btn.wrong  { background: rgba(139,26,26,.15); border-color: var(--seal-red); animation: shake .3s; }
+  .choice-btn.correct{ background: rgba(74,103,65,.25); border-color: var(--moss); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  /* ══════════════════════════════════════════
+     RETO 2 – ÁBACO
+  ══════════════════════════════════════════ */
+  .abacus-area { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .sliders-col { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 18px; }
+  .slider-row label {
+    display: flex; justify-content: space-between;
+    font-family: 'Special Elite'; font-size: .75rem; color: var(--ink-lt);
+    margin-bottom: 6px;
+  }
+  .slider-row input[type=range] {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 8px; border-radius: 4px; cursor: pointer; outline: none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--mahogany); border: 3px solid var(--brass);
+    box-shadow: 0 2px 6px rgba(0,0,0,.4); cursor: pointer;
+  }
+  #sl-food { background: linear-gradient(to right, #c8a96e, #7a5c1e); }
+  #sl-hygiene { background: linear-gradient(to right, #6eb8c8, #1e5c7a); }
+  #sl-crops { background: linear-gradient(to right, #7ac86e, #2a7a1e); }
+
+  .pop-col { flex: 1; min-width: 200px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .pop-meter {
+    width: 70px; height: 200px; border: 3px solid var(--mahogany);
+    border-radius: 4px 4px 2px 2px; background: rgba(255,255,255,.2);
+    position: relative; overflow: hidden;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,.2);
+  }
+  .pop-bar {
+    position: absolute; bottom: 0; width: 100%;
+    background: linear-gradient(180deg, var(--sage) 0%, var(--moss) 100%);
+    transition: height .4s cubic-bezier(.4,0,.2,1);
+  }
+  .pop-target-line {
+    position: absolute; width: 100%; height: 2px;
+    background: var(--brass); opacity: .8;
+  }
+  .target-label {
+    font-family: 'Special Elite'; font-size: .7rem; color: var(--ink-lt); text-align: center;
+  }
+  .pop-pct {
+    font-family: 'IM Fell English'; font-size: 1.5rem; color: var(--mahogany);
+  }
+  .pop-status { font-style: italic; font-size: .82rem; color: var(--ink-lt); text-align: center; }
+
+  /* abacus beads decoration */
+  .abacus-decor {
+    display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 10px;
+  }
+  .bead {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(ellipse at 35% 35%, #d4a017 0%, #8b5e00 100%);
+    box-shadow: 0 1px 3px rgba(0,0,0,.4);
+    transition: transform .3s;
+  }
+
+  /* ══════════════════════════════════════════
+     RETO 3 – MAPAMUNDI
+  ══════════════════════════════════════════ */
+  .map-container { position: relative; width: 100%; }
+  .map-svg-wrap {
+    background: linear-gradient(135deg, #b8d4e8 0%, #8ab8d4 100%);
+    border: 3px solid var(--mahogany); border-radius: 4px;
+    position: relative; overflow: hidden;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,.2);
+  }
+  .map-svg { width: 100%; display: block; }
+
+  .drop-zone {
+    position: absolute; width: 44px; height: 44px; border-radius: 50%;
+    border: 2px dashed var(--mahogany); background: rgba(255,255,255,.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; cursor: pointer; transition: all .25s;
+    transform: translate(-50%, -50%);
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    background: rgba(255,255,255,.65); border-style: solid;
+    transform: translate(-50%,-50%) scale(1.15);
+  }
+  .drop-zone.filled { border-color: var(--moss); background: rgba(74,103,65,.25); border-style: solid; }
+  .drop-zone.wrong-zone { border-color: var(--seal-red); animation: shake .3s; }
+
+  .product-tray {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 14px;
+  }
+  .product-chip {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2px; padding: 8px 14px;
+    background: rgba(242,232,213,.9); border: 2px solid var(--parchment-dk);
+    border-radius: 3px; cursor: grab; user-select: none;
+    transition: all .2s; font-size: 1.6rem;
+  }
+  .product-chip:hover { transform: scale(1.08); border-color: var(--brass); }
+  .product-chip.dragging { opacity: .45; }
+  .product-chip.placed { opacity: .3; pointer-events: none; }
+  .product-chip span { font-family: 'Special Elite'; font-size: .65rem; color: var(--ink-lt); }
+
+  /* Royal Seal */
+  .royal-seal {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    margin-top: 16px; opacity: 0;
+    transition: opacity .6s;
+  }
+  .royal-seal.show { opacity: 1; }
+  .seal-circle {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: radial-gradient(ellipse at center, #c0392b 0%, #8b1a1a 100%);
+    border: 4px solid var(--gold); display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; box-shadow: 0 4px 16px rgba(0,0,0,.5);
+    animation: sealPulse 2s ease-in-out infinite;
+  }
+  @keyframes sealPulse { 0%,100%{box-shadow:0 4px 16px rgba(0,0,0,.5)} 50%{box-shadow:0 4px 28px rgba(201,162,39,.7)} }
+  .seal-text { font-family: 'IM Fell English'; font-size: 1rem; color: var(--seal-red); font-style: italic; }
+
+  /* ══════════════════════════════════════════
+     FINAL BUTTON
+  ══════════════════════════════════════════ */
+  .final-section { text-align: center; margin-top: 32px; }
+  #btn-final {
+    display: inline-block; padding: 16px 40px;
+    background: linear-gradient(135deg, var(--brass) 0%, var(--gold) 50%, var(--brass) 100%);
+    background-size: 200% 100%;
+    border: 3px solid var(--mahogany); border-radius: 4px;
+    font-family: 'IM Fell English'; font-size: 1.15rem; color: var(--mahogany);
+    cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.4);
+    opacity: 0; transform: scale(.9);
+    transition: opacity .6s, transform .6s;
+    animation: none;
+  }
+  #btn-final.visible { opacity: 1; transform: scale(1); }
+  #btn-final.flash  { animation: flashBtn 1.2s ease-in-out infinite; }
+  @keyframes flashBtn {
+    0%,100% { background-position: 0% 0%; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+    50%      { background-position: 100% 0%; box-shadow: 0 6px 32px rgba(201,162,39,.9); }
+  }
+  #btn-final:hover { transform: scale(1.04); }
+
+  /* ══════════════════════════════════════════
+     MODAL FINAL
+  ══════════════════════════════════════════ */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(30, 12, 4, 0.75);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .4s;
+  }
+  .modal-backdrop.show { opacity: 1; pointer-events: all; }
+
+  .modal-box {
+    background: linear-gradient(160deg, rgba(242,232,213,.99) 0%, rgba(224,206,175,.97) 100%);
+    border: 3px solid var(--brass);
+    border-radius: 4px;
+    padding: 36px 40px 28px;
+    max-width: 460px; width: 90%;
+    box-shadow: 0 12px 48px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.5);
+    position: relative;
+    transform: scale(.88);
+    transition: transform .4s cubic-bezier(.2,1.3,.4,1);
+    text-align: center;
+  }
+  .modal-backdrop.show .modal-box { transform: scale(1); }
+
+  .modal-box::before, .modal-box::after {
+    content: '✦'; position: absolute; top: 12px; font-size: 1.1rem; color: var(--brass);
+  }
+  .modal-box::before { left: 16px; }
+  .modal-box::after  { right: 16px; }
+
+  .modal-seal {
+    font-size: 3rem; margin-bottom: 14px;
+    animation: popIn .5s cubic-bezier(.2,1.4,.4,1);
+  }
+  .modal-title {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 1.5rem; color: var(--mahogany);
+    margin-bottom: 10px; line-height: 1.2;
+  }
+  .modal-divider {
+    width: 60px; height: 2px; margin: 0 auto 14px;
+    background: linear-gradient(90deg, transparent, var(--brass), transparent);
+  }
+  .modal-body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 1rem; color: var(--ink-lt);
+    line-height: 1.6; font-style: italic;
+    margin-bottom: 24px;
+  }
+  .modal-body strong {
+    font-style: normal; color: var(--mahogany); font-weight: 600;
+  }
+  .modal-btn {
+    display: inline-block; padding: 12px 36px;
+    background: linear-gradient(135deg, var(--brass) 0%, var(--gold) 50%, var(--brass) 100%);
+    background-size: 200% 100%;
+    border: 2px solid var(--mahogany); border-radius: 3px;
+    font-family: 'IM Fell English'; font-size: 1rem; color: var(--mahogany);
+    cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .modal-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(201,162,39,.6); }
+
+  /* ── FOCUS VIBRATE ── */
+  @keyframes vibrateScope {
+    0%,100%{transform:rotate(0deg)} 20%{transform:rotate(-1.5deg)} 40%{transform:rotate(1.5deg)}
+    60%{transform:rotate(-1deg)} 80%{transform:rotate(1deg)}
+  }
+  .vibrate { animation: vibrateScope .25s linear; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:600px) {
+    .microscope-area, .abacus-area { flex-direction: column; align-items: center; }
+    .plant-frame { width: 180px; height: 180px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- WOOD ATMOSPHERE -->
+<div class="wood-bg"></div>
+<div class="wood-grain"></div>
+
+<!-- SHELF PROPS (decorative jars) -->
+<div class="shelf-row shelf-top"></div>
+<div class="jar" style="top:18px;left:5%">🧪</div>
+<div class="jar" style="top:16px;left:15%;animation-delay:-1s">🔬</div>
+<div class="jar" style="top:18px;right:8%;animation-delay:-3s">🌿</div>
+<div class="jar" style="top:16px;right:20%;animation-delay:-5s">📜</div>
+<div class="shelf-row shelf-bottom"></div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-label">Siglo XVIII · Expedición Científica Real</div>
+    <h1>El Laboratorio del Naturalista</h1>
+    <p>Tras la batalla naval, el barco retoma su misión científica. Como ayudante del Naturalista, organiza los hallazgos para informar a la Corona.</p>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-strip">
+    <div class="prog-badge" id="p1"><span class="icon">🔬</span> El Microscopio</div>
+    <div class="prog-badge" id="p2"><span class="icon">🧮</span> El Ábaco</div>
+    <div class="prog-badge" id="p3"><span class="icon">🗺️</span> El Mapamundi</div>
+  </div>
+
+  <!-- ══ RETO 1: MICROSCOPIO ══ -->
+  <div class="card" id="card1">
+    <div class="success-overlay" id="success1">
+      <div class="tick">✅</div>
+      <p>¡Planta identificada correctamente!</p>
+    </div>
+    <div class="card-header">
+      <div class="card-num">I</div>
+      <div>
+        <div class="card-title">El Microscopio de Enfoque</div>
+        <div class="card-subtitle">Ajusta el foco y clasifica la planta descubierta</div>
+      </div>
+    </div>
+    <div class="microscope-area">
+      <div class="scope-left">
+        <div class="plant-frame" id="scopeFrame">
+          <div class="plant-img" id="plantImg">🌿</div>
+          <div class="scope-reticle"></div>
+        </div>
+        <div class="focus-label">🎛️ CONTROL DE ENFOQUE</div>
+        <input type="range" class="focus-slider" id="focusSlider" min="0" max="100" value="0">
+        <div class="focus-label" id="focusVal" style="color:var(--mahogany)">Enfoque: 0%</div>
+      </div>
+      <div class="scope-right">
+        <div class="ficha" id="ficha">
+          <h3 id="fichaName">🌱 Cinchona officinalis</h3>
+          <p id="fichaDesc">Planta descubierta en los Andes peruanos. Sus cortezas contienen propiedades medicinales extraordinarias, conocida popularmente como "Árbol de la Quina".</p>
+          <div style="font-family:'Special Elite';font-size:.72rem;color:var(--ink-lt);margin-bottom:10px">
+            SELECCIONA EL BENEFICIO PRINCIPAL:
+          </div>
+          <div class="choices" id="choices">
+            <button class="choice-btn" data-correct="false">Saborizante industrial del cacao</button>
+            <button class="choice-btn" data-correct="true">Tratamiento efectivo contra la malaria</button>
+            <button class="choice-btn" data-correct="false">Madera para construcción naval</button>
+            <button class="choice-btn" data-correct="false">Anestésico empleado por la Real Cirugía</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RETO 2: ÁBACO ══ -->
+  <div class="card" id="card2">
+    <div class="success-overlay" id="success2">
+      <div class="tick">✅</div>
+      <p>¡Objetivo demográfico alcanzado!</p>
+    </div>
+    <div class="card-header">
+      <div class="card-num">II</div>
+      <div>
+        <div class="card-title">El Ábaco Demográfico</div>
+        <div class="card-subtitle">Simula la transición demográfica del siglo XVIII — alcanza el 85% de crecimiento</div>
+      </div>
+    </div>
+    <div class="abacus-area">
+      <div class="sliders-col">
+        <div class="slider-row">
+          <label><span>🍞 Mejora en la Alimentación</span><span id="v-food">0%</span></label>
+          <input type="range" id="sl-food" min="0" max="100" value="0">
+        </div>
+        <div class="slider-row">
+          <label><span>🏥 Higiene y Medicina</span><span id="v-hygiene">0%</span></label>
+          <input type="range" id="sl-hygiene" min="0" max="100" value="0">
+        </div>
+        <div class="slider-row">
+          <label><span>🌽 Nuevos Cultivos</span><span id="v-crops">0%</span></label>
+          <input type="range" id="sl-crops" min="0" max="100" value="0">
+        </div>
+        <div class="abacus-decor" id="beads"></div>
+      </div>
+      <div class="pop-col">
+        <div class="pop-meter">
+          <div class="pop-bar" id="popBar" style="height:0%"></div>
+          <div class="pop-target-line" style="bottom:85%"></div>
+        </div>
+        <div class="target-label">▲ Objetivo: 85%</div>
+        <div class="pop-pct" id="popPct">0%</div>
+        <div class="pop-status" id="popStatus">Ajusta los sliders para simular el crecimiento poblacional</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RETO 3: MAPA ══ -->
+  <div class="card" id="card3">
+    <div class="success-overlay" id="success3">
+      <div class="tick">✅</div>
+      <p>¡Mapa de especies completado!</p>
+    </div>
+    <div class="card-header">
+      <div class="card-num">III</div>
+      <div>
+        <div class="card-title">El Mapamundi de Especies</div>
+        <div class="card-subtitle">Arrastra cada producto a su región de origen</div>
+      </div>
+    </div>
+    <div class="map-container">
+      <div class="map-svg-wrap" id="mapWrap">
+        <!-- Simplified world map SVG -->
+        <svg class="map-svg" viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="land-shadow">
+              <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.3"/>
+            </filter>
+          </defs>
+          <!-- Ocean -->
+          <rect width="800" height="380" fill="#7ab4cc"/>
+          <!-- Grid lines -->
+          <line x1="0" y1="190" x2="800" y2="190" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-dasharray="4,6"/>
+          <line x1="400" y1="0" x2="400" y2="380" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-dasharray="4,6"/>
+
+          <!-- EUROPE / Spain -->
+          <ellipse cx="380" cy="115" rx="40" ry="30" fill="#c8b87a" filter="url(#land-shadow)"/>
+          <text x="380" y="113" text-anchor="middle" font-family="'Special Elite',cursive" font-size="9" fill="#5c2a0e">EUROPA</text>
+          <text x="380" y="126" text-anchor="middle" font-family="'Special Elite',cursive" font-size="8" fill="#8b4513">España</text>
+
+          <!-- NORTH AMERICA -->
+          <ellipse cx="180" cy="110" rx="80" ry="55" fill="#a8c890" filter="url(#land-shadow)"/>
+          <text x="180" y="108" text-anchor="middle" font-family="'Special Elite',cursive" font-size="9" fill="#2a5c1e">N. AMÉRICA</text>
+
+          <!-- CENTRAL / SOUTH AMERICA -->
+          <ellipse cx="210" cy="230" rx="55" ry="80" fill="#7ab870" filter="url(#land-shadow)"/>
+          <text x="210" y="228" text-anchor="middle" font-family="'Special Elite',cursive" font-size="9" fill="#2a5c1e">S. AMÉRICA</text>
+          <text x="210" y="241" text-anchor="middle" font-family="'Special Elite',cursive" font-size="8" fill="#2a5c1e">Andes / México</text>
+
+          <!-- AFRICA -->
+          <ellipse cx="430" cy="230" rx="45" ry="60" fill="#d4b86a" filter="url(#land-shadow)"/>
+          <text x="430" y="235" text-anchor="middle" font-family="'Special Elite',cursive" font-size="9" fill="#5c2a0e">ÁFRICA</text>
+
+          <!-- ASIA -->
+          <ellipse cx="600" cy="140" rx="90" ry="50" fill="#c8d490" filter="url(#land-shadow)"/>
+          <text x="600" y="143" text-anchor="middle" font-family="'Special Elite',cursive" font-size="9" fill="#2a4c1e">ASIA</text>
+
+          <!-- PHILIPPINES -->
+          <ellipse cx="665" cy="195" rx="22" ry="28" fill="#b8d890" filter="url(#land-shadow)"/>
+          <text x="665" y="193" text-anchor="middle" font-family="'Special Elite',cursive" font-size="8" fill="#2a4c1e">FILIPINAS</text>
+
+          <!-- DECORATIVE COMPASS ROSE -->
+          <g transform="translate(730,310)">
+            <circle r="20" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.4)" stroke-width="1"/>
+            <text x="0" y="-12" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.7)" font-family="serif">N</text>
+            <text x="0" y="16" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.7)" font-family="serif">S</text>
+            <text x="14" y="4"  text-anchor="middle" font-size="8" fill="rgba(255,255,255,.7)" font-family="serif">E</text>
+            <text x="-14" y="4" text-anchor="middle" font-size="8" fill="rgba(255,255,255,.7)" font-family="serif">O</text>
+            <line x1="0" y1="-16" x2="0" y2="16" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+            <line x1="-16" y1="0" x2="16" y2="0" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+          </g>
+        </svg>
+
+        <!-- DROP ZONES (positioned absolutely over the SVG) -->
+        <!-- Americas zone -->
+        <div class="drop-zone" id="dz-america"
+             style="left:26%;top:63%"
+             data-region="america" title="América del Sur / México"></div>
+        <!-- Philippines zone -->
+        <div class="drop-zone" id="dz-filipinas"
+             style="left:83%;top:52%"
+             data-region="filipinas" title="Filipinas"></div>
+        <!-- Spain zone -->
+        <div class="drop-zone" id="dz-spain"
+             style="left:47%;top:32%"
+             data-region="spain" title="España"></div>
+      </div>
+
+      <!-- PRODUCT TRAY -->
+      <div class="product-tray" id="productTray">
+        <div class="product-chip" draggable="true" data-id="patata" data-region="america">
+          🥔<span>Patata</span>
+        </div>
+        <div class="product-chip" draggable="true" data-id="maiz" data-region="america">
+          🌽<span>Maíz</span>
+        </div>
+        <div class="product-chip" draggable="true" data-id="tabaco" data-region="america">
+          🍃<span>Tabaco</span>
+        </div>
+        <div class="product-chip" draggable="true" data-id="vainilla" data-region="america">
+          🌸<span>Vainilla</span>
+        </div>
+        <div class="product-chip" draggable="true" data-id="canela" data-region="filipinas">
+          🫚<span>Canela</span>
+        </div>
+        <div class="product-chip" draggable="true" data-id="aceite" data-region="spain">
+          🫒<span>Aceite de Oliva</span>
+        </div>
+        <div class="product-chip" draggable="true" data-id="cacao" data-region="america">
+          🍫<span>Cacao</span>
+        </div>
+        <div class="product-chip" draggable="true" data-id="quina" data-region="america">
+          🌿<span>Quina</span>
+        </div>
+        <div class="product-chip" draggable="true" data-id="vino" data-region="spain">
+          🍷<span>Vino de Jerez</span>
+        </div>
+      </div>
+
+      <!-- Royal Seal -->
+      <div class="royal-seal" id="royalSeal">
+        <div class="seal-circle">👑</div>
+        <div class="seal-text">✦ APROBADO POR LA CORONA REAL ✦</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ══════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════ */
+const state = { done: [false, false, false] };
+
+function markDone(i) {
+  if (state.done[i]) return;
+  state.done[i] = true;
+  document.getElementById('p' + (i+1)).classList.add('done');
+  document.getElementById('success' + (i+1)).classList.add('show');
+  setTimeout(() => checkAll(), 600);
+}
+
+function checkAll() {}
+
+/* ══════════════════════════════════════════════════
+   RETO 1 – MICROSCOPIO
+══════════════════════════════════════════════════ */
+const focusSlider = document.getElementById('focusSlider');
+const plantImg    = document.getElementById('plantImg');
+const fichaEl     = document.getElementById('ficha');
+const focusValEl  = document.getElementById('focusVal');
+const scopeFrame  = document.getElementById('scopeFrame');
+let r1done = false;
+
+focusSlider.addEventListener('input', () => {
+  if (r1done) return;
+  const v = parseInt(focusSlider.value);
+  focusValEl.textContent = 'Enfoque: ' + v + '%';
+
+  const blur = Math.max(0, 12 - (v / 100) * 12);
+  const bright = 0.7 + (v / 100) * 0.3;
+  const sat    = 0.4 + (v / 100) * 0.6;
+  plantImg.style.filter = `blur(${blur.toFixed(1)}px) brightness(${bright.toFixed(2)}) saturate(${sat.toFixed(2)})`;
+
+  // vibrate near focus zone
+  if (v > 85 && v < 95) {
+    scopeFrame.classList.remove('vibrate');
+    void scopeFrame.offsetWidth;
+    scopeFrame.classList.add('vibrate');
+    setTimeout(() => scopeFrame.classList.remove('vibrate'), 260);
+  }
+
+  if (v >= 88) {
+    plantImg.style.filter = 'blur(0px) brightness(1) saturate(1)';
+    fichaEl.classList.add('show');
+    focusValEl.textContent = '🎯 ¡Imagen enfocada!';
+    focusValEl.style.color = 'var(--moss)';
+  }
+});
+
+document.getElementById('choices').addEventListener('click', e => {
+  if (r1done) return;
+  const btn = e.target.closest('.choice-btn');
+  if (!btn) return;
+  if (btn.dataset.correct === 'true') {
+    btn.classList.add('correct');
+    r1done = true;
+    setTimeout(() => markDone(0), 600);
+  } else {
+    btn.classList.add('wrong');
+    setTimeout(() => btn.classList.remove('wrong'), 400);
+  }
+});
+
+/* ══════════════════════════════════════════════════
+   RETO 2 – ÁBACO
+══════════════════════════════════════════════════ */
+// Build beads
+const beadsEl = document.getElementById('beads');
+for (let i = 0; i < 20; i++) {
+  const b = document.createElement('div'); b.className = 'bead'; beadsEl.appendChild(b);
+}
+
+const slFood    = document.getElementById('sl-food');
+const slHygiene = document.getElementById('sl-hygiene');
+const slCrops   = document.getElementById('sl-crops');
+const vFood     = document.getElementById('v-food');
+const vHygiene  = document.getElementById('v-hygiene');
+const vCrops    = document.getElementById('v-crops');
+const popBar    = document.getElementById('popBar');
+const popPct    = document.getElementById('popPct');
+const popStatus = document.getElementById('popStatus');
+let r2done = false;
+
+function updatePop() {
+  if (r2done) return;
+  const f = parseInt(slFood.value);
+  const h = parseInt(slHygiene.value);
+  const c = parseInt(slCrops.value);
+  vFood.textContent    = f + '%';
+  vHygiene.textContent = h + '%';
+  vCrops.textContent   = c + '%';
+
+  // Weighted formula representing demographic transition
+  const pct = Math.min(100, Math.round(f * 0.35 + h * 0.40 + c * 0.25));
+  popBar.style.height = pct + '%';
+  popPct.textContent  = pct + '%';
+
+  // Animate beads
+  const active = Math.round(pct / 100 * 20);
+  [...beadsEl.children].forEach((b, i) => {
+    b.style.transform = i < active ? 'scale(1.2)' : 'scale(1)';
+    b.style.background = i < active
+      ? 'radial-gradient(ellipse at 35% 35%, #7ac87a 0%, #2a7a1e 100%)'
+      : 'radial-gradient(ellipse at 35% 35%, #d4a017 0%, #8b5e00 100%)';
+  });
+
+  if (pct >= 85) {
+    popStatus.textContent = '¡Objetivo alcanzado! Transición demográfica lograda.';
+    popStatus.style.color = 'var(--moss)';
+    r2done = true;
+    setTimeout(() => markDone(1), 700);
+  } else if (pct >= 60) {
+    popStatus.textContent = 'Buen progreso. Ajusta más los factores...';
+    popStatus.style.color = 'var(--brass)';
+  } else {
+    popStatus.textContent = 'Incrementa los factores para estimular el crecimiento.';
+    popStatus.style.color = 'var(--ink-lt)';
+  }
+}
+
+[slFood, slHygiene, slCrops].forEach(s => s.addEventListener('input', updatePop));
+
+/* ══════════════════════════════════════════════════
+   RETO 3 – MAPA DE ESPECIES
+══════════════════════════════════════════════════ */
+let dragId = null;
+let dragRegion = null;
+const placed   = {};  // { productId: regionId }
+const needed = 9;     // total products
+
+// DRAG START
+document.querySelectorAll('.product-chip').forEach(chip => {
+  chip.addEventListener('dragstart', e => {
+    dragId     = chip.dataset.id;
+    dragRegion = chip.dataset.region;
+    chip.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  chip.addEventListener('dragend', () => {
+    chip.classList.remove('dragging');
+  });
+});
+
+// DROP ZONES
+document.querySelectorAll('.drop-zone').forEach(zone => {
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+    e.dataTransfer.dropEffect = 'move';
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    if (!dragId) return;
+    const zoneRegion = zone.dataset.region;
+    if (zoneRegion === dragRegion) {
+      // Correct!
+      placed[dragId] = zoneRegion;
+      zone.textContent = getEmoji(dragId);
+      zone.classList.add('filled');
+      zone.title = getLabel(dragId);
+      // Mark chip as placed
+      document.querySelector(`.product-chip[data-id="${dragId}"]`).classList.add('placed');
+      // Check completion
+      if (Object.keys(placed).length >= needed) {
+        document.getElementById('royalSeal').classList.add('show');
+        setTimeout(() => markDone(2), 900);
+      }
+    } else {
+      zone.classList.add('wrong-zone');
+      setTimeout(() => zone.classList.remove('wrong-zone'), 400);
+    }
+    dragId = null; dragRegion = null;
+  });
+});
+
+function getEmoji(id) {
+  const map = { patata:'🥔', maiz:'🌽', tabaco:'🍃', vainilla:'🌸', canela:'🫚', aceite:'🫒', cacao:'🍫', quina:'🌿', vino:'🍷' };
+  return map[id] || '?';
+}
+function getLabel(id) {
+  const map = { patata:'Patata', maiz:'Maíz', tabaco:'Tabaco', vainilla:'Vainilla', canela:'Canela', aceite:'Aceite', cacao:'Cacao', quina:'Quina', vino:'Vino de Jerez' };
+  return map[id] || id;
+}
+
+// Touch drag fallback for mobile
+(function() {
+  let touchChip = null, clone = null;
+  document.querySelectorAll('.product-chip').forEach(chip => {
+    chip.addEventListener('touchstart', e => {
+      touchChip = chip;
+      dragId     = chip.dataset.id;
+      dragRegion = chip.dataset.region;
+      const t = e.touches[0];
+      clone = chip.cloneNode(true);
+      clone.style.cssText = `position:fixed;pointer-events:none;z-index:9999;opacity:.8;
+        left:${t.clientX - 30}px;top:${t.clientY - 30}px;transform:scale(1.1)`;
+      document.body.appendChild(clone);
+    }, {passive:true});
+    chip.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const t = e.touches[0];
+      if (clone) { clone.style.left = (t.clientX - 30) + 'px'; clone.style.top = (t.clientY - 30) + 'px'; }
+    }, {passive:false});
+    chip.addEventListener('touchend', e => {
+      if (clone) { document.body.removeChild(clone); clone = null; }
+      const t = e.changedTouches[0];
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const zone = el && el.closest ? (el.classList.contains('drop-zone') ? el : el.closest('.drop-zone')) : null;
+      if (zone && dragId) {
+        const ev = new DragEvent('drop', { bubbles:true, cancelable:true, dataTransfer: new DataTransfer() });
+        zone.dispatchEvent(ev);
+      }
+      touchChip = null; dragId = null; dragRegion = null;
+    });
+  });
+})();
+
+/* FINAL BUTTON removed - handled by LV-SEQ panel */
+</script>
+
+
+
+<!-- ══════ GUÍA DE PRUEBAS ══════ -->
+
+<style>
+#guia-fab{
+  position:fixed;top:14px;right:14px;z-index:99990;
+  display:flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,#3d1f0d,#6b3a2a);
+  border:1px solid #c9973a;
+  color:#f0d080;font-family:'Cinzel','IM Fell English',Georgia,serif;
+  font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+  box-shadow:0 4px 14px rgba(0,0,0,.55),inset 0 1px 0 rgba(232,184,75,.25);
+  transition:transform .2s,box-shadow .2s;
+}
+#guia-fab:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.6)}
+#guia-overlay{
+  position:fixed;inset:0;z-index:99991;
+  background:rgba(20,10,5,.78);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+#guia-overlay.visible{display:flex;animation:guia-fade .35s ease}
+@keyframes guia-fade{from{opacity:0}to{opacity:1}}
+#guia-box{
+  width:100%;max-width:480px;max-height:88vh;overflow:auto;
+  border-radius:10px;
+  background:linear-gradient(160deg,#f5e6c8 0%,#e8d5a3 100%);
+  border:3px solid #b5651d;
+  box-shadow:0 20px 60px rgba(0,0,0,.7),inset 0 0 40px rgba(112,66,20,.12);
+  font-family:'IM Fell English','Crimson Text',Georgia,serif;color:#2c1810;
+  animation:guia-up .35s ease;
+}
+@keyframes guia-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+#guia-box .guia-head{
+  padding:14px 20px;
+  background:linear-gradient(90deg,#3d1f0d,#6b3a2a);
+  border-bottom:2px solid #c9973a;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;
+}
+#guia-box .guia-head span{
+  font-family:'Cinzel',serif;font-size:1rem;font-weight:700;
+  color:#e8b84b;letter-spacing:.06em;
+}
+#guia-box .guia-close{
+  background:none;border:none;color:#f0d080;font-size:1.3rem;
+  cursor:pointer;line-height:1;transition:transform .2s;
+}
+#guia-box .guia-close:hover{transform:scale(1.25)}
+#guia-box .guia-body{padding:20px 22px 6px}
+#guia-box .guia-entry{display:flex;gap:14px;margin-bottom:18px}
+#guia-box .guia-entry .guia-icon{font-size:1.85rem;line-height:1;flex-shrink:0}
+#guia-box .guia-entry h3{
+  font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;
+  color:#3d1f0d;margin:0 0 6px;letter-spacing:.04em;
+}
+#guia-box .guia-entry p{
+  font-size:.82rem;line-height:1.55;color:#4a2c1a;margin:0;
+  font-family:'Crimson Text','IM Fell English',Georgia,serif;
+}
+#guia-box .guia-foot{
+  padding:10px 20px 16px;border-top:1px solid #c4a97d;
+  text-align:center;font-style:italic;font-size:.72rem;color:#704214;
+}
+</style>
+<button id="guia-fab" type="button" aria-label="Guía de las pruebas">📖 Guía</button>
+<div id="guia-overlay" role="dialog" aria-modal="true"><div id="guia-box"><div class="guia-head"><span>📖 Cuaderno del Naturalista</span><button class="guia-close" type="button" aria-label="Cerrar">✕</button></div><div class="guia-body"><div class="guia-entry"><div class="guia-icon">🔬</div><div><h3>Microscopio</h3><p>Mueve el control deslizante para ajustar el enfoque del microscopio. Cuando la imagen esté nítida, identifica la especie observada y selecciona su nombre correcto en la ficha.</p></div></div><div class="guia-entry"><div class="guia-icon">🧮</div><div><h3>Ábaco del naturalista</h3><p>Resuelve el cálculo del diario moviendo las cuentas de cada varilla del ábaco hasta representar la cifra exacta solicitada por el naturalista.</p></div></div><div class="guia-entry"><div class="guia-icon">🌍</div><div><h3>Mapa de especies</h3><p>Arrastra cada espécimen catalogado hasta la región del mundo donde fue recogido. Cada especie pertenece a una sola zona biogeográfica.</p></div></div></div><div class="guia-foot">"Nullius in verba." — Royal Society</div></div></div>
+
+<script>
+(function(){
+  function open(){document.getElementById('guia-overlay').classList.add('visible')}
+  function close(e){
+    if(!e||e.target.id==='guia-overlay'||e.currentTarget.classList.contains('guia-close'))
+      document.getElementById('guia-overlay').classList.remove('visible')
+  }
+  function ready(){
+    document.getElementById('guia-fab').addEventListener('click',open);
+    document.getElementById('guia-overlay').addEventListener('click',close);
+    document.querySelector('#guia-box .guia-close').addEventListener('click',function(e){
+      e.stopPropagation();
+      document.getElementById('guia-overlay').classList.remove('visible');
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape') document.getElementById('guia-overlay').classList.remove('visible');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready);
+  else ready();
+})();
+</script>
+
+<!-- ══════ FIN GUÍA DE PRUEBAS ══════ -->
+<!-- LV-SEQ-START -->
+<style>
+  .reto-card.lv-hidden, .card.lv-hidden { display:none !important; }
+  #lv-next-panel {
+    position: relative; margin: 28px auto; max-width: 540px;
+    padding: 28px 32px; text-align: center;
+    background: linear-gradient(135deg,#2a1810,#1a0f08);
+    border: 2px solid #c9962a; border-radius: 8px;
+    box-shadow: 0 0 40px rgba(201,150,42,.45);
+    display: none; animation: lv-fade .6s ease both; z-index: 50;
+  }
+  #lv-next-panel.show { display:block; }
+  #lv-next-panel h3 {
+    font-family: 'Cinzel', 'IM Fell English', serif;
+    color: #f0d78c; font-size: 1.2rem; letter-spacing: .1em; margin: 0 0 12px;
+  }
+  #lv-next-panel p {
+    color: #d4c5a3; font-style: italic; font-size: .9rem;
+    margin: 0 0 20px; line-height: 1.6; font-family: 'IM Fell English','EB Garamond',serif;
+  }
+  #lv-next-btn {
+    padding: 12px 28px;
+    background: linear-gradient(135deg,#c9962a,#f0d78c,#c9962a);
+    background-size: 200%;
+    border: 2px solid #6b3a2a; border-radius: 6px;
+    color: #2a1810; font-family: 'Cinzel', serif;
+    font-size: .95rem; font-weight: 700; letter-spacing: .12em;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(201,150,42,.55);
+    transition: transform .2s;
+  }
+  #lv-next-btn:hover { transform: scale(1.05); }
+  @keyframes lv-fade { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+<div id="lv-next-panel">
+  <h3>⚓ ¡Pantalla completada!</h3>
+  <p>La Corona aprueba tus informes científicos. Ahora Cádiz te aguarda para forjar la Constitución.</p>
+  <button id="lv-next-btn" type="button">Continuar a la Pantalla 5 →</button>
+</div>
+<script>
+(function(){
+  const NEXT_URL = 'Pantalla5.html';
+  const cards = ['card1','card2','card3'].map(id=>document.getElementById(id)).filter(Boolean);
+  if (cards.length < 2) return;
+  cards.slice(1).forEach(c=>c.classList.add('lv-hidden'));
+  let current = 0;
+  const seen = new Set();
+  function advance(){
+    if (current >= cards.length - 1) {
+      ['exit-panel','victory','victory-modal','modalFinal'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('show','visible'); el.style.display='none'; }
+      });
+      if (!NEXT_URL) return; // last screen: leave original victory flow alone
+      const panel = document.getElementById('lv-next-panel');
+      panel.classList.add('show');
+      panel.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    current++;
+    const next = cards[current];
+    next.classList.remove('lv-hidden');
+    setTimeout(()=>next.scrollIntoView({behavior:'smooth', block:'start'}), 120);
+  }
+  function hook(){
+    const orig = window.markDone;
+    if (typeof orig !== 'function') { setTimeout(hook, 100); return; }
+    window.markDone = function(arg){
+      const r = orig.apply(this, arguments);
+      const k = String(arg);
+      if (!seen.has(k)) { seen.add(k); setTimeout(advance, 1000); }
+      return r;
+    };
+  }
+  hook();
+  const btn = document.getElementById('lv-next-btn');
+  if (NEXT_URL) {
+    btn.addEventListener('click', ()=>{ window.location.href = NEXT_URL; });
+  } else {
+    btn.style.display = 'none';
+  }
+})();
+</script>
+<!-- LV-SEQ-END -->
+
+</body>
+</html>

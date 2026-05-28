@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantalla 3 — El Almirantazgo</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:        #0d1b0f;
+    --parchment:  #c8a96e;
+    --parch-dark: #a07840;
+    --wood:       #3b2410;
+    --wood-light: #5c3a1e;
+    --mil-green:  #2d4a22;
+    --mil-light:  #4a7a35;
+    --navy:       #0c1f3d;
+    --navy-light: #1a3a6b;
+    --steel:      #6b7c8a;
+    --steel-light:#9ab0be;
+    --gold:       #c9962a;
+    --gold-light: #f0c060;
+    --red:        #8b1a1a;
+    --red-light:  #c0392b;
+    --ally:       #1a5f9e;
+    --enemy:      #8b1a1a;
+    --neutral:    #5a5a5a;
+    --glow:       rgba(201,150,42,.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    font-family: 'Cinzel', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='3' fill='%23c9962a'/%3E%3C/svg%3E") 10 10, crosshair;
+  }
+
+  /* ═══════════ INTRO ═══════════ */
+  #intro-screen {
+    position: fixed; inset: 0;
+    background: #000;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 1000;
+    transition: opacity 1.2s ease;
+  }
+  #intro-screen.fade-out { opacity: 0; pointer-events: none; }
+
+  .intro-text {
+    color: var(--parchment);
+    font-family: 'IM Fell English', serif;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.8;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp .8s .5s forwards;
+  }
+  .intro-text em { color: var(--gold-light); font-style: italic; }
+
+  .intro-btn {
+    margin-top: 2.5rem;
+    padding: .9rem 2.5rem;
+    background: transparent;
+    border: 2px solid var(--gold);
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    letter-spacing: .15em;
+    cursor: pointer;
+    opacity: 0;
+    animation: fadeUp .8s 1.5s forwards;
+    transition: all .3s;
+  }
+  .intro-btn:hover { background: var(--gold); color: var(--ink); }
+
+  /* ═══════════ MAIN LAYOUT ═══════════ */
+  #app {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(201,150,42,.06) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(201,150,42,.06) 40px),
+      radial-gradient(ellipse at 20% 20%, rgba(45,74,34,.4), transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(12,31,61,.6), transparent 60%),
+      var(--ink);
+  }
+  #app.visible { display: flex; }
+
+  /* ═══════════ HEADER ═══════════ */
+  header {
+    background: linear-gradient(to right, var(--wood), var(--wood-light), var(--wood));
+    border-bottom: 3px solid var(--gold);
+    padding: 1rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,.6);
+  }
+  .header-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: clamp(1rem, 3vw, 1.6rem);
+    color: var(--gold-light);
+    text-shadow: 0 0 20px var(--glow);
+    letter-spacing: .1em;
+  }
+  .header-title span { color: var(--parchment); font-size: .7em; display: block; letter-spacing: .25em; }
+
+  .progress-bar {
+    display: flex; gap: .6rem; align-items: center;
+  }
+  .prog-dot {
+    width: 14px; height: 14px;
+    border: 2px solid var(--steel);
+    border-radius: 50%;
+    transition: all .4s;
+  }
+  .prog-dot.done { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .prog-dot.active { border-color: var(--gold-light); animation: pulse-dot 1.2s infinite; }
+
+  .explosion-badge {
+    color: var(--red-light);
+    font-family: 'IM Fell English', serif;
+    font-size: .85rem;
+    animation: flicker 2s infinite;
+  }
+
+  /* ═══════════ TABS ═══════════ */
+  .tabs {
+    display: flex;
+    background: var(--wood);
+    border-bottom: 2px solid var(--gold);
+    padding: 0 2rem;
+    gap: .3rem;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    padding: .75rem 1.4rem;
+    background: transparent;
+    border: none; border-bottom: 3px solid transparent;
+    color: var(--steel-light);
+    font-family: 'Cinzel', serif;
+    font-size: .85rem;
+    letter-spacing: .08em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .3s;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .tab-btn:hover { color: var(--parchment); }
+  .tab-btn.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+  .tab-btn.completed { color: var(--mil-light); }
+  .tab-btn .check { color: var(--gold); font-size: 1rem; }
+
+  /* ═══════════ PANELS ═══════════ */
+  .panel {
+    display: none;
+    flex: 1;
+    padding: 2rem;
+    animation: fadeIn .4s ease;
+  }
+  .panel.active { display: block; }
+
+  .panel-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, rgba(45,74,34,.12), rgba(12,31,61,.18));
+    border: 1px solid rgba(201,150,42,.25);
+    border-radius: 2px;
+    padding: 2rem;
+    box-shadow: inset 0 0 60px rgba(0,0,0,.3), 0 8px 40px rgba(0,0,0,.5);
+  }
+
+  .challenge-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: clamp(.9rem, 2.5vw, 1.2rem);
+    color: var(--gold);
+    margin-bottom: .4rem;
+    letter-spacing: .1em;
+  }
+  .challenge-desc {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: var(--parchment);
+    font-size: .95rem;
+    margin-bottom: 1.8rem;
+    line-height: 1.7;
+    opacity: .85;
+  }
+
+  /* ═══════════ RETO 1: BANDERAS ═══════════ */
+  .flags-display {
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  .flag-card {
+    width: 80px; height: 100px;
+    background: var(--navy);
+    border: 2px solid var(--gold);
+    border-radius: 3px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: .3rem;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,.4);
+  }
+  .flag-card svg { width: 52px; height: 52px; }
+  .flag-card .flag-label {
+    font-size: .65rem;
+    color: var(--steel-light);
+    letter-spacing: .1em;
+  }
+
+  .codebook {
+    background: rgba(201,150,42,.07);
+    border: 1px solid rgba(201,150,42,.2);
+    padding: 1.2rem;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+  .codebook-title {
+    color: var(--parch-dark);
+    font-size: .7rem;
+    letter-spacing: .2em;
+    margin-bottom: 1rem;
+  }
+  .letter-grid {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+  }
+  .letter-btn {
+    width: 42px; height: 42px;
+    background: var(--wood);
+    border: 1px solid var(--parch-dark);
+    color: var(--parchment);
+    font-family: 'Cinzel', serif;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: all .2s;
+    border-radius: 2px;
+  }
+  .letter-btn:hover { background: var(--mil-green); border-color: var(--mil-light); color: #fff; }
+  .letter-btn.selected { background: var(--navy-light); border-color: var(--ally); color: var(--gold-light); }
+
+  .answer-display {
+    display: flex; gap: .5rem; justify-content: center;
+    margin: 1.2rem 0;
+    min-height: 48px;
+    flex-wrap: wrap;
+  }
+  .answer-letter {
+    width: 42px; height: 42px;
+    background: var(--navy);
+    border: 2px solid var(--navy-light);
+    color: var(--gold-light);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    border-radius: 2px;
+    animation: popIn .25s cubic-bezier(.4,0,.2,1);
+  }
+  .answer-letter.correct { border-color: var(--mil-light); background: rgba(74,122,53,.25); }
+  .answer-letter.wrong { border-color: var(--red-light); background: rgba(139,26,26,.25); }
+
+  .action-row { display: flex; gap: .8rem; justify-content: center; margin-top: 1rem; }
+  .btn-action {
+    padding: .7rem 1.8rem;
+    border: 2px solid;
+    background: transparent;
+    font-family: 'Cinzel', serif;
+    font-size: .85rem;
+    letter-spacing: .1em;
+    cursor: pointer;
+    transition: all .25s;
+    border-radius: 2px;
+  }
+  .btn-primary { border-color: var(--gold); color: var(--gold-light); }
+  .btn-primary:hover { background: var(--gold); color: var(--ink); }
+  .btn-danger { border-color: var(--steel); color: var(--steel-light); }
+  .btn-danger:hover { background: var(--steel); color: var(--ink); }
+
+  .feedback-msg {
+    text-align: center;
+    font-family: 'IM Fell English', serif;
+    font-size: 1rem;
+    margin-top: 1rem;
+    min-height: 1.4rem;
+    transition: all .3s;
+  }
+  .feedback-msg.ok { color: var(--mil-light); }
+  .feedback-msg.err { color: var(--red-light); }
+
+  /* ═══════════ RETO 2: MAPA ═══════════ */
+  .map-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .map-svg-container {
+    position: relative;
+    background: var(--navy);
+    border: 2px solid var(--gold);
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(12,31,61,.8);
+    width: 100%;
+    max-width: 640px;
+  }
+  .map-svg-container svg { width: 100%; height: auto; display: block; }
+
+  .country-shape {
+    stroke: rgba(201,150,42,.5);
+    stroke-width: 1.5;
+    cursor: pointer;
+    transition: all .3s;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.5));
+  }
+  .country-shape:hover { stroke-width: 2.5; stroke: var(--gold-light); }
+  .country-shape.ally { fill: var(--ally); }
+  .country-shape.enemy { fill: var(--enemy); }
+  .country-shape.neutral { fill: var(--neutral); }
+
+  .map-legend {
+    display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .75rem; color: var(--parchment); letter-spacing: .08em;
+  }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+  .legend-dot.ally { background: var(--ally); }
+  .legend-dot.enemy { background: var(--enemy); }
+  .legend-dot.neutral { background: var(--neutral); }
+
+  .map-status {
+    width: 100%;
+    max-width: 640px;
+    display: flex; flex-wrap: wrap; gap: .6rem;
+  }
+  .country-badge {
+    flex: 1; min-width: 100px;
+    padding: .5rem .8rem;
+    background: rgba(0,0,0,.3);
+    border: 1px solid rgba(201,150,42,.2);
+    border-radius: 2px;
+    font-size: .75rem;
+    color: var(--steel-light);
+    text-align: center;
+    letter-spacing: .05em;
+    transition: all .3s;
+  }
+  .country-badge.ally { color: #6ab0f5; border-color: var(--ally); }
+  .country-badge.enemy { color: #f08080; border-color: var(--enemy); }
+  .country-badge.neutral { color: var(--steel-light); }
+
+  /* ═══════════ RETO 3: RADAR ═══════════ */
+  .radar-layout {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media(max-width:640px){ .radar-layout { grid-template-columns: 1fr; } }
+
+  .radar-container {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+    aspect-ratio: 1;
+  }
+  .radar-svg { width: 100%; height: 100%; }
+
+  .radar-controls {
+    display: flex; flex-direction: column; gap: 1.2rem;
+    min-width: 200px;
+  }
+  .coord-group label {
+    display: block;
+    color: var(--steel-light);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    margin-bottom: .4rem;
+  }
+  .coord-group input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, var(--navy-light), var(--mil-green));
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .coord-group input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    background: var(--gold);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--glow);
+    cursor: pointer;
+  }
+  .coord-val {
+    color: var(--gold-light);
+    font-size: .9rem;
+    margin-top: .3rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ships-list {
+    background: rgba(0,0,0,.3);
+    border: 1px solid rgba(201,150,42,.15);
+    padding: 1rem;
+    border-radius: 2px;
+  }
+  .ships-list-title {
+    color: var(--parch-dark);
+    font-size: .68rem;
+    letter-spacing: .18em;
+    margin-bottom: .8rem;
+  }
+  .ship-row {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .35rem 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    font-size: .78rem;
+    color: var(--parchment);
+    transition: all .4s;
+  }
+  .ship-row.sunk { text-decoration: line-through; color: var(--steel); opacity: .5; }
+  .ship-indicator {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red-light);
+    animation: blink-red 1s infinite;
+    flex-shrink: 0;
+  }
+  .ship-row.sunk .ship-indicator { background: var(--steel); animation: none; }
+
+  /* ═══════════ FOOTER / CONTINUE ═══════════ */
+  footer {
+    padding: 1.5rem 2rem;
+    background: var(--wood);
+    border-top: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .completion-status {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+  }
+  .status-chip {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .75rem;
+    color: var(--steel-light);
+    letter-spacing: .08em;
+  }
+  .status-chip .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--steel);
+    transition: all .4s;
+  }
+  .status-chip.done .dot { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+  .status-chip.done { color: var(--parchment); }
+
+  #continue-btn {
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, var(--mil-green), var(--navy-light));
+    border: 2px solid var(--gold);
+    color: var(--gold-light);
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: .9rem;
+    letter-spacing: .1em;
+    cursor: not-allowed;
+    opacity: .35;
+    transition: all .4s;
+    border-radius: 2px;
+    filter: grayscale(1);
+  }
+  #continue-btn.enabled {
+    cursor: pointer;
+    opacity: 1;
+    filter: none;
+    box-shadow: 0 0 20px var(--glow), 0 4px 20px rgba(0,0,0,.4);
+    animation: pulse-glow 2s infinite;
+  }
+  #continue-btn.enabled:hover {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--ink);
+    box-shadow: 0 0 35px rgba(201,150,42,.6);
+  }
+
+  /* ═══════════ SUCCESS OVERLAY ═══════════ */
+  .success-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.9);
+    z-index: 500;
+    display: none;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1.5rem;
+  }
+  .success-overlay.show { display: flex; animation: fadeIn .5s; }
+  .success-overlay h2 {
+    font-family: 'Cinzel Decorative', cursive;
+    color: var(--gold-light);
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    text-shadow: 0 0 30px var(--gold);
+    text-align: center;
+  }
+  .success-overlay p {
+    font-family: 'IM Fell English', serif;
+    color: var(--parchment);
+    font-size: 1rem;
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.7;
+  }
+  .cannon-emoji { font-size: 3rem; animation: bounce 1s infinite alternate; }
+
+  /* ═══════════ ANIMATIONS ═══════════ */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes popIn {
+    from { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  @keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 0 0 rgba(201,150,42,.5); }
+    50%      { box-shadow: 0 0 0 5px rgba(201,150,42,0); }
+  }
+  @keyframes pulse-glow {
+    0%,100% { box-shadow: 0 0 20px var(--glow), 0 4px 20px rgba(0,0,0,.4); }
+    50%      { box-shadow: 0 0 35px rgba(201,150,42,.6), 0 4px 30px rgba(0,0,0,.5); }
+  }
+  @keyframes flicker {
+    0%,100%{ opacity:1 } 50%{ opacity:.4 }
+  }
+  @keyframes blink-red {
+    0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.3; transform:scale(.7) }
+  }
+  @keyframes bounce {
+    from { transform: translateY(0) rotate(-10deg); }
+    to   { transform: translateY(-12px) rotate(10deg); }
+  }
+  @keyframes explode {
+    0%  { transform: scale(0); opacity: 1; }
+    60% { transform: scale(2.5); opacity: .8; }
+    100%{ transform: scale(4); opacity: 0; }
+  }
+  .explosion-ring {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff8, var(--gold) 40%, transparent 70%);
+    pointer-events: none;
+    animation: explode .6s forwards;
+  }
+
+  /* Rope divider decoration */
+  .rope-divider {
+    width: 100%; height: 8px;
+    background: repeating-linear-gradient(90deg,
+      var(--wood-light) 0px, var(--wood-light) 6px,
+      var(--wood) 6px, var(--wood) 12px);
+    opacity: .4;
+    margin: 1.5rem 0;
+  }
+
+  /* Wax seal decoration */
+  .wax-seal {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px;
+    background: radial-gradient(circle, var(--red-light), var(--red));
+    border-radius: 50%;
+    color: var(--parchment);
+    font-size: 1.4rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.5), inset 0 1px 3px rgba(255,255,255,.2);
+    margin-right: .8rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════ INTRO SCREEN ══════ -->
+<div id="intro-screen">
+  <p class="intro-text">
+    <em>¡BOOM!</em> Una sacudida brutal hace temblar los mamparos.<br><br>
+    Las velas de la popa arden. El vigía grita desde lo alto del palo mayor:<br><br>
+    <em>"¡Flota francesa a babor! ¡Veintitrés navíos de línea!"</em><br><br>
+    El capitán te señala con el catalejo:<br>
+    <em>"Vos. Al Cuarto de Almirantazgo. ¡Ahora!"</em>
+  </p>
+  <button class="intro-btn" onclick="startGame()">⚓ ENTRAR AL ALMIRANTAZGO</button>
+</div>
+
+<!-- ══════ MAIN APP ══════ -->
+<div id="app">
+
+  <header>
+    <div style="display:flex;align-items:center;gap:.8rem">
+      <div class="wax-seal">⚓</div>
+      <div>
+        <div class="header-title">
+          EL ALMIRANTAZGO
+          <span>NIVEL 3 · TÁCTICA Y ALIANZAS</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.5rem">
+      <div class="progress-bar" id="prog-bar">
+        <div class="prog-dot active" id="dot-0"></div>
+        <div class="prog-dot" id="dot-1"></div>
+        <div class="prog-dot" id="dot-2"></div>
+      </div>
+      <div class="explosion-badge">¡BARCO BAJO ATAQUE!</div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-0" onclick="switchTab(0)">
+      ⚓ I. Código del Contramaestre
+    </button>
+    <button class="tab-btn" id="tab-1" onclick="switchTab(1)">
+      🗺 II. Mapa de Alianzas
+    </button>
+    <button class="tab-btn" id="tab-2" onclick="switchTab(2)">
+      🎯 III. Radar de Artillería
+    </button>
+  </div>
+
+  <!-- ════════════════ PANEL 0: CÓDIGO SECRETO ════════════════ -->
+  <div class="panel active" id="panel-0">
+    <div class="panel-inner">
+      <div class="challenge-title">Reto I — El Código del Contramaestre</div>
+      <div class="challenge-desc">
+        El contramaestre del <em style="color:var(--gold-light)">HMS Victory</em> ha cerrado el cofre de bitácoras con un código de
+        <strong>cuatro símbolos</strong> elegidos entre cinco emblemas navales (puede haber repetidos).
+        Dispones de <strong>seis intentos</strong>. Tras cada uno verás cuántos símbolos están en la
+        <span style="color:#2ecc71">posición exacta</span> y cuántos son <span style="color:#e8d44d">correctos pero mal colocados</span>.
+        Razona, deduce y abre el cofre antes de quedarte sin intentos.
+      </div>
+
+      <style>
+        .mm-board{display:flex;flex-direction:column;gap:.55rem;align-items:center;margin:1rem 0 1.2rem}
+        .mm-row{display:flex;gap:.7rem;align-items:center;padding:.45rem .8rem;border:1px solid rgba(201,150,42,.18);border-radius:8px;background:rgba(13,27,15,.45);min-width:340px;justify-content:center;opacity:.45}
+        .mm-row.active{opacity:1;border-color:var(--gold);box-shadow:0 0 14px var(--glow)}
+        .mm-row.past{opacity:.85}
+        .mm-num{color:var(--parch-dark);font-size:.7rem;letter-spacing:.18em;width:28px;text-align:right}
+        .mm-slots{display:flex;gap:.45rem}
+        .mm-slot{width:44px;height:44px;border-radius:50%;background:#1a1208;border:2px dashed rgba(201,150,42,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
+        .mm-row.active .mm-slot:hover{border-color:var(--gold-light);transform:scale(1.05)}
+        .mm-slot.filled{border-style:solid;border-color:var(--gold);background:#2a1a0a}
+        .mm-slot svg{width:26px;height:26px}
+        .mm-pegs{display:grid;grid-template-columns:repeat(2,10px);grid-template-rows:repeat(2,10px);gap:3px;margin-left:.5rem}
+        .mm-peg{width:10px;height:10px;border-radius:50%;background:#3a2818;border:1px solid #1a1208}
+        .mm-peg.exact{background:#2ecc71;box-shadow:0 0 6px #2ecc71}
+        .mm-peg.partial{background:#e8d44d;box-shadow:0 0 6px #e8d44d}
+        .mm-palette{display:flex;gap:.7rem;justify-content:center;margin:.8rem 0;padding:.8rem;background:rgba(60,40,20,.35);border:1px solid var(--parch-dark);border-radius:10px}
+        .mm-token{width:54px;height:54px;border-radius:50%;background:#2a1a0a;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;position:relative}
+        .mm-token:hover{transform:translateY(-3px) scale(1.06);box-shadow:0 0 16px var(--glow)}
+        .mm-token.selected{background:var(--gold);border-color:var(--gold-light);box-shadow:0 0 18px var(--gold-light)}
+        .mm-token svg{width:32px;height:32px}
+        .mm-token .lbl{position:absolute;bottom:-18px;font-size:.55rem;color:var(--parch-dark);letter-spacing:.1em;white-space:nowrap}
+        .mm-info{text-align:center;color:var(--parch-dark);font-size:.75rem;letter-spacing:.15em;margin:.4rem 0 .8rem}
+        .mm-info strong{color:var(--gold-light)}
+        .mm-legend{display:flex;gap:1.2rem;justify-content:center;font-size:.7rem;color:var(--parchment);margin-top:.4rem}
+        .mm-legend span{display:inline-flex;align-items:center;gap:.35rem}
+        .mm-legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+      </style>
+
+      <div class="mm-info">SÍMBOLOS DISPONIBLES — toca uno y luego un hueco del intento activo</div>
+      <div class="mm-palette" id="mm-palette"></div>
+
+      <div class="rope-divider"></div>
+
+      <div class="mm-info">INTENTOS · <strong id="mm-left">6</strong> restantes</div>
+      <div class="mm-board" id="mm-board"></div>
+
+      <div class="mm-legend">
+        <span><i style="background:#2ecc71"></i> posición exacta</span>
+        <span><i style="background:#e8d44d"></i> símbolo correcto, posición errónea</span>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-action btn-danger" onclick="mmClear()">✕ Limpiar fila</button>
+        <button class="btn-action btn-primary" onclick="mmSubmit()">⚓ Probar Código</button>
+      </div>
+      <div class="feedback-msg" id="flag-feedback"></div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════ PANEL 1: MAPA ════════════════ -->
+  <div class="panel" id="panel-1">
+    <div class="panel-inner">
+      <div class="challenge-title">Reto II — El Mapa de las Alianzas</div>
+      <div class="challenge-desc">
+        Es octubre de 1805, víspera de Trafalgar. Identifica las alianzas correctas:
+        pulsa cada país para cambiar su bando. <strong style="color:var(--gold-light)">Azul = Aliado · Rojo = Enemigo · Gris = Neutral.</strong>
+        Reconfigura el mapa tal como estaba en 1805 (desde la perspectiva británica).
+      </div>
+
+      <div class="map-wrapper">
+        <div class="map-svg-container">
+          <svg id="map-svg" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg">
+            <!-- Ocean background -->
+            <rect width="640" height="420" fill="#0c1a2e"/>
+            <!-- Grid lines -->
+            <g stroke="rgba(100,150,200,0.08)" stroke-width="1">
+              <line x1="0" y1="70" x2="640" y2="70"/>
+              <line x1="0" y1="140" x2="640" y2="140"/>
+              <line x1="0" y1="210" x2="640" y2="210"/>
+              <line x1="0" y1="280" x2="640" y2="280"/>
+              <line x1="0" y1="350" x2="640" y2="350"/>
+              <line x1="107" y1="0" x2="107" y2="420"/>
+              <line x1="213" y1="0" x2="213" y2="420"/>
+              <line x1="320" y1="0" x2="320" y2="420"/>
+              <line x1="427" y1="0" x2="427" y2="420"/>
+              <line x1="533" y1="0" x2="533" y2="420"/>
+            </g>
+
+            <!-- GRAN BRETAÑA (top left island) -->
+            <g id="country-gb" onclick="toggleCountry('gb')" style="cursor:pointer">
+              <path id="shape-gb" class="country-shape neutral"
+                d="M 95 45 L 125 35 L 145 50 L 148 75 L 135 95 L 120 105 L 100 100 L 85 85 L 80 65 Z"/>
+              <text x="114" y="75" text-anchor="middle" fill="rgba(255,255,255,0.7)"
+                    font-family="Cinzel,serif" font-size="9" pointer-events="none">GBR</text>
+            </g>
+
+            <!-- ESPAÑA (bottom left peninsula) -->
+            <g id="country-es" onclick="toggleCountry('es')" style="cursor:pointer">
+              <path id="shape-es" class="country-shape neutral"
+                d="M 80 220 L 130 205 L 175 210 L 200 230 L 205 260 L 185 290 L 150 305 L 100 300 L 70 275 L 65 245 Z"/>
+              <text x="137" y="258" text-anchor="middle" fill="rgba(255,255,255,0.7)"
+                    font-family="Cinzel,serif" font-size="9" pointer-events="none">ESP</text>
+            </g>
+
+            <!-- FRANCIA (center) -->
+            <g id="country-fr" onclick="toggleCountry('fr')" style="cursor:pointer">
+              <path id="shape-fr" class="country-shape neutral"
+                d="M 160 120 L 220 105 L 270 115 L 290 145 L 285 190 L 255 215 L 210 220 L 175 210 L 155 185 L 148 150 Z"/>
+              <text x="220" y="168" text-anchor="middle" fill="rgba(255,255,255,0.7)"
+                    font-family="Cinzel,serif" font-size="9" pointer-events="none">FRA</text>
+            </g>
+
+            <!-- AUSTRIA (center right) -->
+            <g id="country-at" onclick="toggleCountry('at')" style="cursor:pointer">
+              <path id="shape-at" class="country-shape neutral"
+                d="M 340 130 L 420 120 L 450 140 L 455 170 L 440 200 L 400 215 L 355 205 L 330 185 L 325 158 Z"/>
+              <text x="390" y="170" text-anchor="middle" fill="rgba(255,255,255,0.7)"
+                    font-family="Cinzel,serif" font-size="9" pointer-events="none">AUT</text>
+            </g>
+
+            <!-- PRUSIA (top right) -->
+            <g id="country-pr" onclick="toggleCountry('pr')" style="cursor:pointer">
+              <path id="shape-pr" class="country-shape neutral"
+                d="M 400 50 L 490 40 L 540 60 L 545 95 L 515 115 L 460 120 L 410 110 L 385 88 L 388 62 Z"/>
+              <text x="466" y="83" text-anchor="middle" fill="rgba(255,255,255,0.7)"
+                    font-family="Cinzel,serif" font-size="9" pointer-events="none">PRU</text>
+            </g>
+
+            <!-- PORTUGAL (oeste de España) -->
+            <g id="country-pt" onclick="toggleCountry('pt')" style="cursor:pointer">
+              <ellipse id="shape-pt" class="country-shape neutral" cx="50" cy="265" rx="18" ry="32"/>
+              <text x="50" y="268" text-anchor="middle" fill="rgba(255,255,255,0.7)"
+                    font-family="Cinzel,serif" font-size="8" pointer-events="none">PRT</text>
+            </g>
+
+            <!-- RUSIA (este lejano) -->
+            <g id="country-ru" onclick="toggleCountry('ru')" style="cursor:pointer">
+              <path id="shape-ru" class="country-shape neutral"
+                d="M 560 50 L 620 45 L 635 75 L 625 110 L 590 120 L 555 105 L 545 78 Z"/>
+              <text x="590" y="85" text-anchor="middle" fill="rgba(255,255,255,0.7)"
+                    font-family="Cinzel,serif" font-size="9" pointer-events="none">RUS</text>
+            </g>
+
+            <!-- Ship icons decoration -->
+            <text x="30" y="380" fill="rgba(201,150,42,0.25)" font-size="28">⛵</text>
+            <text x="580" y="380" fill="rgba(201,150,42,0.25)" font-size="28">⛵</text>
+            <text x="580" y="60" fill="rgba(201,150,42,0.15)" font-size="20">⚓</text>
+
+            <!-- Compass rose -->
+            <g transform="translate(580,320)">
+              <circle r="30" fill="none" stroke="rgba(201,150,42,0.3)" stroke-width="1"/>
+              <text x="0" y="-18" text-anchor="middle" fill="rgba(201,150,42,0.6)"
+                    font-family="Cinzel,serif" font-size="9">N</text>
+              <text x="18" y="4" text-anchor="middle" fill="rgba(201,150,42,0.4)"
+                    font-family="Cinzel,serif" font-size="8">E</text>
+              <text x="0" y="23" text-anchor="middle" fill="rgba(201,150,42,0.4)"
+                    font-family="Cinzel,serif" font-size="8">S</text>
+              <text x="-18" y="4" text-anchor="middle" fill="rgba(201,150,42,0.4)"
+                    font-family="Cinzel,serif" font-size="8">O</text>
+              <line x1="0" y1="-22" x2="0" y2="22" stroke="rgba(201,150,42,0.5)" stroke-width="1"/>
+              <line x1="-22" y1="0" x2="22" y2="0" stroke="rgba(201,150,42,0.5)" stroke-width="1"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-dot ally"></div> Aliado de Gran Bretaña</div>
+          <div class="legend-item"><div class="legend-dot enemy"></div> Enemigo</div>
+          <div class="legend-item"><div class="legend-dot neutral"></div> Neutral / Sin definir</div>
+        </div>
+
+        <div class="map-status" id="map-status"></div>
+
+        <div class="action-row">
+          <button class="btn-action btn-danger" onclick="resetMap()">✕ Reiniciar Mapa</button>
+          <button class="btn-action btn-primary" onclick="checkMap()">⚓ Confirmar Alianzas 1805</button>
+        </div>
+        <div class="feedback-msg" id="map-feedback"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ PANEL 2: RADAR ════════════════ -->
+  <div class="panel" id="panel-2">
+    <div class="panel-inner">
+      <div class="challenge-title">Reto III — Radar de Artillería</div>
+      <div class="challenge-desc">
+        Los puntos parpadeantes son navíos enemigos. Ajusta las coordenadas X e Y con los controles
+        para que la mira coincida con cada barco. ¡Elimínalos a todos para ganar la batalla!
+      </div>
+
+      <div class="radar-layout">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:1rem">
+          <div class="radar-container">
+            <svg class="radar-svg" id="radar-svg" viewBox="0 0 380 380" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background -->
+              <circle cx="190" cy="190" r="188" fill="#050e1a" stroke="rgba(201,150,42,0.4)" stroke-width="1.5"/>
+              <!-- Rings -->
+              <circle cx="190" cy="190" r="150" fill="none" stroke="rgba(74,122,53,0.25)" stroke-width="1"/>
+              <circle cx="190" cy="190" r="112" fill="none" stroke="rgba(74,122,53,0.25)" stroke-width="1"/>
+              <circle cx="190" cy="190" r="75" fill="none" stroke="rgba(74,122,53,0.25)" stroke-width="1"/>
+              <circle cx="190" cy="190" r="37" fill="none" stroke="rgba(74,122,53,0.25)" stroke-width="1"/>
+              <!-- Cross hairs -->
+              <line x1="40" y1="190" x2="340" y2="190" stroke="rgba(74,122,53,0.3)" stroke-width="1"/>
+              <line x1="190" y1="40" x2="190" y2="340" stroke="rgba(74,122,53,0.3)" stroke-width="1"/>
+              <!-- Diagonal -->
+              <line x1="84" y1="84" x2="296" y2="296" stroke="rgba(74,122,53,0.12)" stroke-width="1"/>
+              <line x1="296" y1="84" x2="84" y2="296" stroke="rgba(74,122,53,0.12)" stroke-width="1"/>
+              <!-- Axis labels -->
+              <text x="352" y="194" fill="rgba(201,150,42,0.6)" font-family="Cinzel,serif" font-size="11">X</text>
+              <text x="186" y="28" fill="rgba(201,150,42,0.6)" font-family="Cinzel,serif" font-size="11">Y</text>
+              <!-- Tick marks X -->
+              <text x="109" y="208" fill="rgba(155,176,190,0.5)" font-family="Cinzel,serif" font-size="9" text-anchor="middle">-5</text>
+              <text x="190" y="208" fill="rgba(155,176,190,0.5)" font-family="Cinzel,serif" font-size="9" text-anchor="middle">0</text>
+              <text x="271" y="208" fill="rgba(155,176,190,0.5)" font-family="Cinzel,serif" font-size="9" text-anchor="middle">+5</text>
+              <text x="172" y="115" fill="rgba(155,176,190,0.5)" font-family="Cinzel,serif" font-size="9">+5</text>
+              <text x="172" y="272" fill="rgba(155,176,190,0.5)" font-family="Cinzel,serif" font-size="9">-5</text>
+
+              <!-- Enemy ships (rendered by JS) -->
+              <g id="ships-group"></g>
+              <!-- Crosshair reticle -->
+              <g id="reticle">
+                <circle cx="190" cy="190" r="16" fill="none" stroke="rgba(201,150,42,0.8)" stroke-width="1.5"/>
+                <line x1="174" y1="190" x2="184" y2="190" stroke="rgba(201,150,42,0.9)" stroke-width="1.5"/>
+                <line x1="196" y1="190" x2="206" y2="190" stroke="rgba(201,150,42,0.9)" stroke-width="1.5"/>
+                <line x1="190" y1="174" x2="190" y2="184" stroke="rgba(201,150,42,0.9)" stroke-width="1.5"/>
+                <line x1="190" y1="196" x2="190" y2="206" stroke="rgba(201,150,42,0.9)" stroke-width="1.5"/>
+              </g>
+            </svg>
+          </div>
+          <div id="radar-feedback" class="feedback-msg"></div>
+        </div>
+
+        <div class="radar-controls">
+          <div class="coord-group">
+            <label>COORDENADA X (horizontal)</label>
+            <input type="range" id="slider-x" min="-10" max="10" value="0" step="0.5" oninput="updateReticle()">
+            <div class="coord-val" id="val-x">X: 0.0</div>
+          </div>
+          <div class="coord-group">
+            <label>COORDENADA Y (vertical)</label>
+            <input type="range" id="slider-y" min="-10" max="10" value="0" step="0.5" oninput="updateReticle()">
+            <div class="coord-val" id="val-y">Y: 0.0</div>
+          </div>
+          <button class="btn-action btn-primary" onclick="fireRadar()" style="margin-top:.5rem">
+            💣 DISPARAR
+          </button>
+
+          <div class="ships-list">
+            <div class="ships-list-title">🚢 NAVÍOS ENEMIGOS DETECTADOS</div>
+            <div id="ships-list-inner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ FOOTER ════════════════ -->
+  <footer>
+    <div class="completion-status">
+      <div class="status-chip" id="chip-0">
+        <div class="dot"></div> Código
+      </div>
+      <div class="status-chip" id="chip-1">
+        <div class="dot"></div> Alianzas
+      </div>
+      <div class="status-chip" id="chip-2">
+        <div class="dot"></div> Artillería
+      </div>
+    </div>
+    <button id="continue-btn" onclick="continueToScreen4()">
+      ⚓ Continuar a la Pantalla 4
+    </button>
+  </footer>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="success-overlay">
+  <div class="cannon-emoji">⚓</div>
+  <h2>¡Victoria en Trafalgar!</h2>
+  <p>
+    Habéis descifrado las señales, ordenado las alianzas y destruido la flota enemiga.
+    <em>El Almirantazgo os proclama héroe de la batalla.</em>
+  </p>
+  <button class="btn-action btn-primary" style="font-size:1rem;padding:1rem 2.5rem"
+    onclick="document.getElementById('success-overlay').classList.remove('show')">
+    ✕ Volver al Mapa
+  </button>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+const state = {
+  completed: [false, false, false],
+  currentTab: 0
+};
+
+// ════════════════════════════════════════════
+//  INTRO
+// ════════════════════════════════════════════
+function startGame() {
+  const intro = document.getElementById('intro-screen');
+  intro.classList.add('fade-out');
+  setTimeout(() => {
+    intro.style.display = 'none';
+    const app = document.getElementById('app');
+    app.classList.add('visible');
+    initFlags();
+    initMap();
+    initRadar();
+  }, 1200);
+}
+
+// ════════════════════════════════════════════
+//  TAB SWITCH
+// ════════════════════════════════════════════
+function switchTab(i) {
+  document.querySelectorAll('.panel').forEach((p,j) => p.classList.toggle('active', j===i));
+  document.querySelectorAll('.tab-btn').forEach((b,j) => b.classList.toggle('active', j===i));
+  state.currentTab = i;
+}
+
+// ════════════════════════════════════════════
+//  PROGRESS
+// ════════════════════════════════════════════
+function markComplete(i) {
+  state.completed[i] = true;
+  document.getElementById(`chip-${i}`).classList.add('done');
+  document.getElementById(`dot-${i}`).classList.remove('active');
+  document.getElementById(`dot-${i}`).classList.add('done');
+  const tab = document.getElementById(`tab-${i}`);
+  tab.classList.add('completed');
+  if (!tab.querySelector('.check')) {
+    const c = document.createElement('span');
+    c.className = 'check'; c.textContent = '✓';
+    tab.appendChild(c);
+  }
+  // Activate next dot
+  const nextDot = document.getElementById(`dot-${i+1}`);
+  if (nextDot && !state.completed[i+1]) nextDot.classList.add('active');
+
+  checkAllComplete();
+}
+
+function checkAllComplete() {
+  const all = state.completed.every(Boolean);
+  const btn = document.getElementById('continue-btn');
+  btn.classList.toggle('enabled', all);
+  if (all) {
+    setTimeout(() => document.getElementById('success-overlay').classList.add('show'), 600);
+  }
+}
+
+function continueToScreen4() {
+  if (!state.completed.every(Boolean)) return;
+  window.location.href = 'Pantalla4.html';
+}
+
+// ════════════════════════════════════════════
+//  RETO 1: CÓDIGO DEL CONTRAMAESTRE (Mastermind naval)
+// ════════════════════════════════════════════
+const MM_ICONS = {
+  anchor:  '<svg viewBox="0 0 24 24" fill="none" stroke="#f0c060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><line x1="12" y1="7" x2="12" y2="22"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M4 16a8 8 0 0 0 16 0"/></svg>',
+  sword:   '<svg viewBox="0 0 24 24" fill="none" stroke="#f0c060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/></svg>',
+  compass: '<svg viewBox="0 0 24 24" fill="none" stroke="#f0c060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16 8 10 14 8 16 14 10 16 8"/></svg>',
+  crown:   '<svg viewBox="0 0 24 24" fill="none" stroke="#f0c060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8l4 10h12l4-10-6 4-4-8-4 8z"/><line x1="6" y1="20" x2="18" y2="20"/></svg>',
+  skull:   '<svg viewBox="0 0 24 24" fill="none" stroke="#f0c060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8v-3l1-1v-3a5 5 0 0 0-10 0v3l1 1z"/><circle cx="9.5" cy="13" r="1.2"/><circle cx="14.5" cy="13" r="1.2"/><line x1="12" y1="17" x2="12" y2="19"/></svg>'
+};
+const MM_LABELS = { anchor:'ANCLA', sword:'SABLE', compass:'BRÚJULA', crown:'CORONA', skull:'CALAVERA' };
+const MM_KEYS = ['anchor','sword','compass','crown','skull'];
+const MM_SECRET = ['anchor','crown','sword','compass'];
+const MM_MAX = 6;
+
+let mmAttempts = [];
+let mmCurrent = [null,null,null,null];
+let mmSelected = null;
+
+function initFlags() {
+  const pal = document.getElementById('mm-palette');
+  pal.innerHTML = '';
+  MM_KEYS.forEach(k => {
+    pal.innerHTML += `<div class="mm-token" data-k="${k}" onclick="mmPick('${k}')">${MM_ICONS[k]}<span class="lbl">${MM_LABELS[k]}</span></div>`;
+  });
+  mmRenderBoard();
+}
+
+function mmPick(k){
+  if (state.completed[0]) return;
+  mmSelected = k;
+  document.querySelectorAll('.mm-token').forEach(t => t.classList.toggle('selected', t.dataset.k === k));
+}
+
+function mmPlace(i){
+  if (state.completed[0] || !mmSelected) return;
+  mmCurrent[i] = mmSelected;
+  mmRenderBoard();
+}
+
+function mmClear(){
+  if (state.completed[0]) return;
+  mmCurrent = [null,null,null,null];
+  mmRenderBoard();
+}
+
+function mmSlotHtml(sym, idx, active){
+  const onclick = active ? `onclick="mmPlace(${idx})"` : '';
+  const filled = sym ? 'filled' : '';
+  const content = sym ? MM_ICONS[sym] : '';
+  return `<div class="mm-slot ${filled}" ${onclick}>${content}</div>`;
+}
+
+function mmPegsHtml(exact, partial){
+  let html = '<div class="mm-pegs">';
+  for (let i=0;i<4;i++){
+    let cls = '';
+    if (i < exact) cls = 'exact';
+    else if (i < exact + partial) cls = 'partial';
+    html += `<div class="mm-peg ${cls}"></div>`;
+  }
+  return html + '</div>';
+}
+
+function mmRowHtml(num, guess, active, exact=0, partial=0){
+  const slots = guess.map((s,i) => mmSlotHtml(s, i, active)).join('');
+  const cls = active ? 'active' : (guess.some(Boolean) ? 'past' : '');
+  const pegs = (active || !guess.some(Boolean)) ? '<div class="mm-pegs"><div class="mm-peg"></div><div class="mm-peg"></div><div class="mm-peg"></div><div class="mm-peg"></div></div>' : mmPegsHtml(exact, partial);
+  return `<div class="mm-row ${cls}"><div class="mm-num">${String(num).padStart(2,'0')}</div><div class="mm-slots">${slots}</div>${pegs}</div>`;
+}
+
+function mmRenderBoard(){
+  const board = document.getElementById('mm-board');
+  let html = '';
+  mmAttempts.forEach((a, i) => { html += mmRowHtml(i+1, a.guess, false, a.exact, a.partial); });
+  if (mmAttempts.length < MM_MAX && !state.completed[0]) {
+    html += mmRowHtml(mmAttempts.length+1, mmCurrent, true);
+  }
+  const drawn = mmAttempts.length + ((mmAttempts.length < MM_MAX && !state.completed[0]) ? 1 : 0);
+  for (let i = drawn; i < MM_MAX; i++){
+    html += mmRowHtml(i+1, [null,null,null,null], false);
+  }
+  board.innerHTML = html;
+  document.getElementById('mm-left').textContent = Math.max(0, MM_MAX - mmAttempts.length);
+}
+
+function mmScore(guess, secret){
+  let exact = 0;
+  const sRem = [], gRem = [];
+  for (let i=0;i<4;i++){
+    if (guess[i] === secret[i]) exact++;
+    else { sRem.push(secret[i]); gRem.push(guess[i]); }
+  }
+  let partial = 0;
+  gRem.forEach(g => {
+    const idx = sRem.indexOf(g);
+    if (idx !== -1){ partial++; sRem.splice(idx,1); }
+  });
+  return { exact, partial };
+}
+
+function mmSubmit(){
+  if (state.completed[0]) return;
+  if (mmCurrent.some(x => !x)) {
+    const fb = document.getElementById('flag-feedback');
+    fb.textContent = '✗ Completa los cuatro huecos antes de probar.';
+    fb.className = 'feedback-msg err';
+    return;
+  }
+  const guess = [...mmCurrent];
+  const { exact, partial } = mmScore(guess, MM_SECRET);
+  mmAttempts.push({ guess, exact, partial });
+  mmCurrent = [null,null,null,null];
+  mmRenderBoard();
+
+  const fb = document.getElementById('flag-feedback');
+  if (exact === 4) {
+    fb.textContent = '✓ ¡Cofre abierto! El código del contramaestre ha caído.';
+    fb.className = 'feedback-msg ok';
+    markComplete(0);
+    setTimeout(() => switchTab(1), 1800);
+  } else if (mmAttempts.length >= MM_MAX) {
+    fb.textContent = `✗ Sin intentos. El código era: ${MM_SECRET.map(k=>MM_LABELS[k]).join(' · ')}. Recargando…`;
+    fb.className = 'feedback-msg err';
+    setTimeout(() => { mmAttempts = []; mmRenderBoard(); fb.textContent=''; fb.className='feedback-msg'; }, 3000);
+  } else {
+    fb.textContent = `Intento ${mmAttempts.length}/${MM_MAX} — ${exact} exactos, ${partial} mal colocados.`;
+    fb.className = 'feedback-msg';
+    fb.style.color = 'var(--gold-light)';
+  }
+}
+
+// ════════════════════════════════════════════
+//  RETO 2: MAPA
+// ════════════════════════════════════════════
+// Trafalgar 1805 (British perspective):
+// GBR = ally, ESP = enemy, FRA = enemy, AUT = ally, PRU = neutral
+const SOLUTION_MAP = { gb:'ally', es:'enemy', fr:'enemy', at:'ally', pr:'neutral', pt:'ally', ru:'ally' };
+const COUNTRY_NAMES = { gb:'Gran Bretaña', es:'España', fr:'Francia', at:'Austria', pr:'Prusia', pt:'Portugal', ru:'Rusia' };
+let mapState = { gb:'neutral', es:'neutral', fr:'neutral', at:'neutral', pr:'neutral', pt:'neutral', ru:'neutral' };
+const CYCLE = ['neutral','ally','enemy'];
+
+function initMap() {
+  renderMapBadges();
+}
+
+function toggleCountry(id) {
+  if (state.completed[1]) return;
+  const cur = mapState[id];
+  const next = CYCLE[(CYCLE.indexOf(cur)+1)%3];
+  mapState[id] = next;
+  const shape = document.getElementById(`shape-${id}`);
+  shape.className.baseVal = `country-shape ${next}`;
+  renderMapBadges();
+  document.getElementById('map-feedback').textContent = '';
+}
+
+function renderMapBadges() {
+  const container = document.getElementById('map-status');
+  container.innerHTML = '';
+  Object.entries(COUNTRY_NAMES).forEach(([id, name]) => {
+    const s = mapState[id];
+    const label = s === 'ally' ? 'ALIADO' : s === 'enemy' ? 'ENEMIGO' : 'NEUTRAL';
+    container.innerHTML += `<div class="country-badge ${s}">${name}: ${label}</div>`;
+  });
+}
+
+function resetMap() {
+  Object.keys(mapState).forEach(id => {
+    mapState[id] = 'neutral';
+    document.getElementById(`shape-${id}`).className.baseVal = 'country-shape neutral';
+  });
+  renderMapBadges();
+  document.getElementById('map-feedback').textContent = '';
+}
+
+function checkMap() {
+  if (state.completed[1]) return;
+  const correct = Object.keys(SOLUTION_MAP).every(k => mapState[k] === SOLUTION_MAP[k]);
+  const fb = document.getElementById('map-feedback');
+  if (correct) {
+    fb.textContent = '✓ ¡Alianzas correctas! La coalición de 1805 está establecida.';
+    fb.className = 'feedback-msg ok';
+    markComplete(1);
+    setTimeout(() => switchTab(2), 1800);
+  } else {
+    fb.textContent = '✗ Configuración incorrecta. Recuerda la perspectiva británica en Trafalgar 1805.';
+    fb.className = 'feedback-msg err';
+  }
+}
+
+// ════════════════════════════════════════════
+//  RETO 3: RADAR
+// ════════════════════════════════════════════
+const SHIPS = [
+  { id:0, x:3.5,  y:4,    name:'Bucentaure',          sunk:false },
+  { id:1, x:-4,   y:-2,   name:'Santísima Trinidad',  sunk:false },
+  { id:2, x:1,    y:-5,   name:'Redoutable',          sunk:false },
+  { id:3, x:-2.5, y:3,    name:'Neptune',             sunk:false },
+  { id:4, x:6,    y:-1.5, name:'Indomptable',         sunk:false },
+  { id:5, x:-6,   y:5.5,  name:'Príncipe de Asturias',sunk:false },
+];
+const TOLERANCE = 0.7;
+
+function coordToSVG(v) {
+  // v in [-10,10] → SVG [40,340]
+  return 190 + (v / 10) * 150;
+}
+
+function initRadar() {
+  renderShips();
+  renderShipsList();
+}
+
+function renderShips() {
+  const g = document.getElementById('ships-group');
+  g.innerHTML = '';
+  SHIPS.forEach(s => {
+    if (s.sunk) return;
+    const cx = coordToSVG(s.x);
+    const cy = coordToSVG(-s.y); // invert Y for SVG
+    g.innerHTML += `
+      <g id="ship-${s.id}">
+        <circle cx="${cx}" cy="${cy}" r="6" fill="${getShipColor(s.id)}" opacity="0.9">
+          <animate attributeName="r" values="5;9;5" dur="1.${s.id+2}s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="1;0.4;1" dur="1.${s.id+2}s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="${cx}" cy="${cy}" r="12" fill="none" stroke="${getShipColor(s.id)}" stroke-width="1" opacity="0.3">
+          <animate attributeName="r" values="8;18;8" dur="1.${s.id+2}s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.5;0;0.5" dur="1.${s.id+2}s" repeatCount="indefinite"/>
+        </circle>
+      </g>`;
+  });
+}
+
+function getShipColor(i) {
+  const colors = ['#e74c3c','#c0392b','#ff6b6b','#ff8c69'];
+  return colors[i % colors.length];
+}
+
+function updateReticle() {
+  const x = parseFloat(document.getElementById('slider-x').value);
+  const y = parseFloat(document.getElementById('slider-y').value);
+  document.getElementById('val-x').textContent = `X: ${x.toFixed(1)}`;
+  document.getElementById('val-y').textContent = `Y: ${y.toFixed(1)}`;
+  const cx = coordToSVG(x);
+  const cy = coordToSVG(-y);
+  const r = document.getElementById('reticle');
+  // Move all children of reticle
+  r.setAttribute('transform', `translate(${cx-190},${cy-190})`);
+}
+
+function fireRadar() {
+  if (state.completed[2]) return;
+  const x = parseFloat(document.getElementById('slider-x').value);
+  const y = parseFloat(document.getElementById('slider-y').value);
+  const fb = document.getElementById('radar-feedback');
+
+  let hit = false;
+  SHIPS.forEach(s => {
+    if (s.sunk) return;
+    const dist = Math.sqrt((s.x - x)**2 + (s.y - y)**2);
+    if (dist <= TOLERANCE) {
+      s.sunk = true;
+      hit = true;
+      // Explosion animation
+      const cx = coordToSVG(s.x);
+      const cy = coordToSVG(-s.y);
+      const svg = document.getElementById('radar-svg');
+      const div = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      div.setAttribute('cx', cx); div.setAttribute('cy', cy); div.setAttribute('r', '5');
+      div.style.cssText = `fill:radial-gradient(circle,#fff,#f39c12,transparent);`;
+      // Use foreignObject trick for HTML animation
+      addExplosion(cx, cy);
+      document.getElementById(`ship-${s.id}`)?.remove();
+      fb.textContent = `💥 ¡${s.name} hundido!`;
+      fb.className = 'feedback-msg ok';
+    }
+  });
+
+  if (!hit) {
+    fb.textContent = '🌊 Sin impacto. Ajusta las coordenadas.';
+    fb.className = 'feedback-msg err';
+  }
+
+  renderShipsList();
+
+  if (SHIPS.every(s => s.sunk)) {
+    setTimeout(() => {
+      fb.textContent = '⚓ ¡Flota enemiga eliminada! Victoria total.';
+      fb.className = 'feedback-msg ok';
+      markComplete(2);
+    }, 500);
+  }
+}
+
+function addExplosion(cx, cy) {
+  const svg = document.getElementById('radar-svg');
+  for (let i = 0; i < 3; i++) {
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', cx + (Math.random()-0.5)*20);
+    c.setAttribute('cy', cy + (Math.random()-0.5)*20);
+    c.setAttribute('r', '3');
+    c.setAttribute('fill', i===0?'#fff':'#f39c12');
+    c.style.animation = `explode ${0.4+i*0.15}s forwards`;
+    svg.appendChild(c);
+    setTimeout(() => c.remove(), 800);
+  }
+}
+
+function renderShipsList() {
+  const el = document.getElementById('ships-list-inner');
+  el.innerHTML = '';
+  SHIPS.forEach(s => {
+    el.innerHTML += `
+      <div class="ship-row ${s.sunk?'sunk':''}">
+        <div class="ship-indicator"></div>
+        <span>${s.name}</span>
+        ${s.sunk ? '<span style="margin-left:auto;font-size:.7rem;color:var(--steel)">HUNDIDO</span>' : `<span style="margin-left:auto;font-size:.7rem;color:var(--red-light)">(${s.x}, ${s.y})</span>`}
+      </div>`;
+  });
+}
+
+// ════════════════════════════════════════════
+//  INIT ON LOAD (auto-start after 3s for demo)
+// ════════════════════════════════════════════
+// Uncomment to auto-start:
+// setTimeout(startGame, 100);
+</script>
+
+
+
+<!-- ══════ GUÍA DE PRUEBAS ══════ -->
+
+<style>
+#guia-fab{
+  position:fixed;top:14px;right:14px;z-index:99990;
+  display:flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,#3d1f0d,#6b3a2a);
+  border:1px solid #c9973a;
+  color:#f0d080;font-family:'Cinzel','IM Fell English',Georgia,serif;
+  font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+  box-shadow:0 4px 14px rgba(0,0,0,.55),inset 0 1px 0 rgba(232,184,75,.25);
+  transition:transform .2s,box-shadow .2s;
+}
+#guia-fab:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.6)}
+#guia-overlay{
+  position:fixed;inset:0;z-index:99991;
+  background:rgba(20,10,5,.78);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+#guia-overlay.visible{display:flex;animation:guia-fade .35s ease}
+@keyframes guia-fade{from{opacity:0}to{opacity:1}}
+#guia-box{
+  width:100%;max-width:480px;max-height:88vh;overflow:auto;
+  border-radius:10px;
+  background:linear-gradient(160deg,#f5e6c8 0%,#e8d5a3 100%);
+  border:3px solid #b5651d;
+  box-shadow:0 20px 60px rgba(0,0,0,.7),inset 0 0 40px rgba(112,66,20,.12);
+  font-family:'IM Fell English','Crimson Text',Georgia,serif;color:#2c1810;
+  animation:guia-up .35s ease;
+}
+@keyframes guia-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+#guia-box .guia-head{
+  padding:14px 20px;
+  background:linear-gradient(90deg,#3d1f0d,#6b3a2a);
+  border-bottom:2px solid #c9973a;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;
+}
+#guia-box .guia-head span{
+  font-family:'Cinzel',serif;font-size:1rem;font-weight:700;
+  color:#e8b84b;letter-spacing:.06em;
+}
+#guia-box .guia-close{
+  background:none;border:none;color:#f0d080;font-size:1.3rem;
+  cursor:pointer;line-height:1;transition:transform .2s;
+}
+#guia-box .guia-close:hover{transform:scale(1.25)}
+#guia-box .guia-body{padding:20px 22px 6px}
+#guia-box .guia-entry{display:flex;gap:14px;margin-bottom:18px}
+#guia-box .guia-entry .guia-icon{font-size:1.85rem;line-height:1;flex-shrink:0}
+#guia-box .guia-entry h3{
+  font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;
+  color:#3d1f0d;margin:0 0 6px;letter-spacing:.04em;
+}
+#guia-box .guia-entry p{
+  font-size:.82rem;line-height:1.55;color:#4a2c1a;margin:0;
+  font-family:'Crimson Text','IM Fell English',Georgia,serif;
+}
+#guia-box .guia-foot{
+  padding:10px 20px 16px;border-top:1px solid #c4a97d;
+  text-align:center;font-style:italic;font-size:.72rem;color:#704214;
+}
+</style>
+<button id="guia-fab" type="button" aria-label="Guía de las pruebas">📖 Guía</button>
+<div id="guia-overlay" role="dialog" aria-modal="true"><div id="guia-box"><div class="guia-head"><span>📖 Cuaderno del Almirante</span><button class="guia-close" type="button" aria-label="Cerrar">✕</button></div><div class="guia-body"><div class="guia-entry"><div class="guia-icon">🚩</div><div><h3>Mensaje de banderas</h3><p>Observa las banderas izadas por la escuadra aliada y consulta el código del almirantazgo para traducirlas. Pulsa las letras en el orden correcto hasta formar la palabra del mensaje cifrado.</p></div></div><div class="guia-entry"><div class="guia-icon">🗺️</div><div><h3>Mapa de Trafalgar</h3><p>Despliega tu escuadra arrastrando cada navío a su posición estratégica sobre el mapa. La formación correcta dará ventaja a la flota aliada en la batalla.</p></div></div><div class="guia-entry"><div class="guia-icon">📡</div><div><h3>Radar de la flota</h3><p>Configura los parámetros del radar adoptando la perspectiva británica de Trafalgar (1805). Cuando los ajustes sean los correctos, el radar localizará a la flota enemiga.</p></div></div></div><div class="guia-foot">"England expects that every man will do his duty." — Nelson, 1805</div></div></div>
+
+<script>
+(function(){
+  function open(){document.getElementById('guia-overlay').classList.add('visible')}
+  function close(e){
+    if(!e||e.target.id==='guia-overlay'||e.currentTarget.classList.contains('guia-close'))
+      document.getElementById('guia-overlay').classList.remove('visible')
+  }
+  function ready(){
+    document.getElementById('guia-fab').addEventListener('click',open);
+    document.getElementById('guia-overlay').addEventListener('click',close);
+    document.querySelector('#guia-box .guia-close').addEventListener('click',function(e){
+      e.stopPropagation();
+      document.getElementById('guia-overlay').classList.remove('visible');
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape') document.getElementById('guia-overlay').classList.remove('visible');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready);
+  else ready();
+})();
+</script>
+
+<!-- ══════ FIN GUÍA DE PRUEBAS ══════ -->
+<!-- LV-SEQ-START -->
+<script>
+(function(){
+  function init(){
+    if (typeof window.switchTab !== 'function' || !window.state) { setTimeout(init, 80); return; }
+    // Hide tabs 1 and 2 visually until previous is completed
+    const origSwitch = window.switchTab;
+    window.switchTab = function(i){
+      if (i > 0 && !window.state.completed[i-1]) return; // block jump
+      return origSwitch.apply(this, arguments);
+    };
+    // Disable inactive tab buttons
+    function refresh(){
+      for (let i=0;i<3;i++){
+        const tab = document.getElementById('tab-'+i);
+        if (!tab) continue;
+        const allowed = i===0 || window.state.completed[i-1];
+        tab.style.opacity = allowed ? '' : '.4';
+        tab.style.pointerEvents = allowed ? '' : 'none';
+      }
+    }
+    const origMC = window.markComplete;
+    if (typeof origMC === 'function') {
+      window.markComplete = function(i){
+        const r = origMC.apply(this, arguments);
+        refresh();
+        // Auto-advance
+        if (i < 2) setTimeout(()=>window.switchTab(i+1), 900);
+        return r;
+      };
+    }
+    refresh();
+  }
+  init();
+})();
+</script>
+<!-- LV-SEQ-END -->
+</body>
+</html>
